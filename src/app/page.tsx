@@ -1,65 +1,273 @@
-import Image from "next/image";
+"use client";
+
+import React, { useState, useMemo } from "react";
+import { useStore } from "@/context/StoreContext";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
+import { ProductCard } from "@/components/ProductCard";
+import { ProductModal } from "@/components/ProductModal";
+import { Product } from "@/types";
 
 export default function Home() {
+  const { products } = useStore();
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>("Todos");
+
+  const categories = useMemo(() => {
+    const cats = ["Todos", ...new Set(products.map((p) => p.category))];
+    return cats;
+  }, [products]);
+
+  const featuredProducts = useMemo(() => {
+    return products.filter((p) => p.featured);
+  }, [products]);
+
+  const filteredProducts = useMemo(() => {
+    if (selectedCategory === "Todos") return products;
+    return products.filter((p) => p.category === selectedCategory);
+  }, [products, selectedCategory]);
+
+  const handleProductClick = (product: Product) => {
+    setSelectedProduct(product);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setTimeout(() => setSelectedProduct(null), 300);
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+    <div className="min-h-screen flex flex-col">
+      <Header />
+
+      <main className="flex-1">
+        {/* Hero Section */}
+        <section className="relative bg-[var(--secondary)] overflow-hidden">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
+            <div className="max-w-2xl">
+              <h1 className="text-4xl lg:text-6xl font-bold text-[var(--foreground)] mb-6">
+                Vista-se com
+                <span className="block text-[var(--primary)]">Estilo e Elegância</span>
+              </h1>
+              <p className="text-lg text-[var(--muted)] mb-8">
+                Descubra as últimas tendências em moda. Peças exclusivas para todas as ocasiões,
+                com qualidade premium e preços acessíveis.
+              </p>
+              <div className="flex flex-wrap gap-4">
+                <a
+                  href="#produtos"
+                  className="px-8 py-3 bg-[var(--foreground)] text-[var(--background)] rounded-xl font-semibold hover:opacity-90 transition-opacity"
+                >
+                  Ver Coleção
+                </a>
+                <a
+                  href="#sobre"
+                  className="px-8 py-3 border-2 border-[var(--foreground)] text-[var(--foreground)] rounded-xl font-semibold hover:bg-[var(--foreground)] hover:text-[var(--background)] transition-colors"
+                >
+                  Saiba Mais
+                </a>
+              </div>
+            </div>
+          </div>
+
+          {/* Decorative Elements */}
+          <div className="absolute top-0 right-0 w-1/2 h-full hidden lg:block">
+            <div className="absolute inset-0 bg-gradient-to-l from-transparent to-[var(--secondary)]" />
+            <div className="absolute top-10 right-10 w-64 h-64 rounded-full bg-[var(--border)] opacity-50 blur-3xl" />
+            <div className="absolute bottom-10 right-32 w-48 h-48 rounded-full bg-[var(--accent)] opacity-30 blur-3xl" />
+          </div>
+        </section>
+
+        {/* Featured Products */}
+        {featuredProducts.length > 0 && (
+          <section className="py-16 bg-[var(--background)]">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <h2 className="text-2xl lg:text-3xl font-bold text-[var(--foreground)]">
+                    Destaques
+                  </h2>
+                  <p className="text-[var(--muted)] mt-1">
+                    Peças selecionadas especialmente para você
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {featuredProducts.slice(0, 4).map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    onClick={() => handleProductClick(product)}
+                  />
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Categories Section */}
+        <section id="categorias" className="py-16 bg-[var(--secondary)]">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="text-2xl lg:text-3xl font-bold text-[var(--foreground)]">
+                Categorias
+              </h2>
+              <p className="text-[var(--muted)] mt-2">
+                Navegue por categoria e encontre o que procura
+              </p>
+            </div>
+
+            <div className="flex flex-wrap justify-center gap-3">
+              {categories.map((category) => (
+                <button
+                  key={category}
+                  onClick={() => setSelectedCategory(category)}
+                  className={`px-6 py-3 rounded-full font-medium transition-all ${
+                    selectedCategory === category
+                      ? "bg-[var(--foreground)] text-[var(--background)]"
+                      : "bg-[var(--card-bg)] text-[var(--foreground)] hover:bg-[var(--border)]"
+                  }`}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* All Products */}
+        <section id="produtos" className="py-16 bg-[var(--background)]">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between mb-8">
+              <div>
+                <h2 className="text-2xl lg:text-3xl font-bold text-[var(--foreground)]">
+                  {selectedCategory === "Todos" ? "Todos os Produtos" : selectedCategory}
+                </h2>
+                <p className="text-[var(--muted)] mt-1">
+                  {filteredProducts.length} {filteredProducts.length === 1 ? "produto encontrado" : "produtos encontrados"}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {filteredProducts.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  onClick={() => handleProductClick(product)}
+                />
+              ))}
+            </div>
+
+            {filteredProducts.length === 0 && (
+              <div className="text-center py-16">
+                <svg
+                  className="w-16 h-16 mx-auto text-[var(--muted)] mb-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1.5}
+                    d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
+                  />
+                </svg>
+                <p className="text-[var(--muted)]">Nenhum produto encontrado nesta categoria</p>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* About Section */}
+        <section id="sobre" className="py-16 bg-[var(--secondary)]">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              <div>
+                <h2 className="text-2xl lg:text-3xl font-bold text-[var(--foreground)] mb-6">
+                  Sobre Nossa Loja
+                </h2>
+                <p className="text-[var(--muted)] mb-4 leading-relaxed">
+                  Há mais de 10 anos no mercado, somos referência em moda de qualidade.
+                  Nossa missão é proporcionar a melhor experiência de compra, oferecendo
+                  peças que combinam estilo, conforto e preço justo.
+                </p>
+                <p className="text-[var(--muted)] mb-6 leading-relaxed">
+                  Trabalhamos com as melhores marcas e tecidos, garantindo durabilidade
+                  e satisfação em cada compra. Nossa equipe está sempre pronta para
+                  ajudá-lo a encontrar o look perfeito.
+                </p>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="text-center p-4 bg-[var(--card-bg)] rounded-xl">
+                    <p className="text-2xl font-bold text-[var(--foreground)]">10+</p>
+                    <p className="text-sm text-[var(--muted)]">Anos de experiência</p>
+                  </div>
+                  <div className="text-center p-4 bg-[var(--card-bg)] rounded-xl">
+                    <p className="text-2xl font-bold text-[var(--foreground)]">50k+</p>
+                    <p className="text-sm text-[var(--muted)]">Clientes satisfeitos</p>
+                  </div>
+                  <div className="text-center p-4 bg-[var(--card-bg)] rounded-xl">
+                    <p className="text-2xl font-bold text-[var(--foreground)]">1000+</p>
+                    <p className="text-sm text-[var(--muted)]">Produtos</p>
+                  </div>
+                </div>
+              </div>
+              <div className="relative">
+                <div className="aspect-square rounded-2xl overflow-hidden bg-[var(--card-bg)] border border-[var(--border)]">
+                  <img
+                    src="https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?w=800"
+                    alt="Nossa Loja"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-[var(--foreground)] rounded-2xl flex items-center justify-center text-[var(--background)]">
+                  <div className="text-center">
+                    <p className="text-2xl font-bold">100%</p>
+                    <p className="text-xs">Satisfação</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="py-16 bg-[var(--foreground)]">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 className="text-2xl lg:text-3xl font-bold text-[var(--background)] mb-4">
+              Cadastre-se e ganhe 10% de desconto
+            </h2>
+            <p className="text-[var(--background)]/70 mb-8 max-w-md mx-auto">
+              Receba novidades, promoções exclusivas e dicas de moda diretamente no seu e-mail.
+            </p>
+            <form className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+              <input
+                type="email"
+                placeholder="Seu melhor e-mail"
+                className="flex-1 px-4 py-3 rounded-xl bg-[var(--background)] text-[var(--foreground)] placeholder:text-[var(--muted)] focus:outline-none focus:ring-2 focus:ring-[var(--background)]/50"
+              />
+              <button
+                type="submit"
+                className="px-6 py-3 bg-[var(--background)] text-[var(--foreground)] rounded-xl font-semibold hover:opacity-90 transition-opacity"
+              >
+                Cadastrar
+              </button>
+            </form>
+          </div>
+        </section>
       </main>
+
+      <Footer />
+
+      <ProductModal
+        product={selectedProduct}
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+      />
     </div>
   );
 }
