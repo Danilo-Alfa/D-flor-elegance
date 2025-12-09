@@ -6,7 +6,7 @@ import { useStore } from "@/context/StoreContext";
 import { CartDrawer } from "./CartDrawer";
 
 export function Header() {
-  const { cartCount, user, logout } = useStore();
+  const { cartCount } = useStore();
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -132,31 +132,6 @@ export function Header() {
                 )}
               </button>
 
-              {/* Admin */}
-              {user.isAdmin ? (
-                <div className="hidden md:flex items-center gap-2">
-                  <Link
-                    href="/admin"
-                    className="text-sm text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
-                  >
-                    Admin
-                  </Link>
-                  <button
-                    onClick={logout}
-                    className="text-sm text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
-                  >
-                    Sair
-                  </button>
-                </div>
-              ) : (
-                <Link
-                  href="/admin/login"
-                  className="hidden md:block text-sm text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors"
-                >
-                  Admin
-                </Link>
-              )}
-
               {/* Mobile Menu Button */}
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -222,34 +197,6 @@ export function Header() {
                   {item.label}
                 </Link>
               ))}
-              {user.isAdmin ? (
-                <>
-                  <Link
-                    href="/admin"
-                    className="font-body text-sm tracking-widest uppercase text-[var(--foreground)]/80 hover:text-[var(--foreground)] transition-colors duration-300 py-2"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Admin
-                  </Link>
-                  <button
-                    onClick={() => {
-                      logout();
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="text-left font-body text-sm tracking-widest uppercase text-[var(--foreground)]/80 hover:text-[var(--foreground)] transition-colors duration-300 py-2"
-                  >
-                    Sair
-                  </button>
-                </>
-              ) : (
-                <Link
-                  href="/admin/login"
-                  className="font-body text-sm tracking-widest uppercase text-[var(--foreground)]/80 hover:text-[var(--foreground)] transition-colors duration-300 py-2"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Admin
-                </Link>
-              )}
             </nav>
           </div>
         </div>

@@ -9,7 +9,7 @@ import { ImageFrame } from "@/components/ImageFrame";
 
 export default function AdminPanel() {
   const router = useRouter();
-  const { user, logout, products, updateProduct, setProducts } = useStore();
+  const { user, logout, products, updateProduct, createProduct, deleteProduct, isLoading } = useStore();
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState<Partial<Product>>({});
@@ -17,6 +17,8 @@ export default function AdminPanel() {
   const [newColor, setNewColor] = useState({ name: "", hex: "#000000" });
   const [newSize, setNewSize] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     if (!user.isAdmin) {
@@ -78,50 +80,80 @@ export default function AdminPanel() {
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (selectedProduct && editForm) {
-      const updatedProduct = {
-        ...selectedProduct,
-        ...editForm,
-        imageUrl: editForm.images?.[0] || selectedProduct.imageUrl,
-        updatedAt: new Date().toISOString(),
-      } as Product;
+      setIsSaving(true);
+      setErrorMessage("");
 
-      updateProduct(updatedProduct);
-      setSelectedProduct(updatedProduct);
-      setIsEditing(false);
-      setSuccessMessage("Produto atualizado com sucesso!");
-      setTimeout(() => setSuccessMessage(""), 3000);
+      try {
+        const updatedProduct = {
+          ...selectedProduct,
+          ...editForm,
+          imageUrl: editForm.images?.[0] || selectedProduct.imageUrl,
+        } as Product;
+
+        await updateProduct(updatedProduct);
+        setSelectedProduct(updatedProduct);
+        setIsEditing(false);
+        setSuccessMessage("Produto atualizado com sucesso!");
+        setTimeout(() => setSuccessMessage(""), 3000);
+      } catch {
+        setErrorMessage("Erro ao salvar produto. Tente novamente.");
+        setTimeout(() => setErrorMessage(""), 3000);
+      } finally {
+        setIsSaving(false);
+      }
     }
   };
 
-  const handleAddNewProduct = () => {
-    const newProduct: Product = {
-      id: Date.now().toString(),
-      name: "Novo Produto",
-      description: "Descrição do produto",
-      price: 0,
-      imageUrl: "",
-      images: [],
-      sizes: [],
-      colors: [],
-      category: "Outros",
-      stock: 0,
-      featured: false,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
+  const handleAddNewProduct = async () => {
+    setIsSaving(true);
+    setErrorMessage("");
 
-    setProducts((prev) => [...prev, newProduct]);
-    handleSelectProduct(newProduct);
-    setIsEditing(true);
+    try {
+      const newProductData = {
+        name: "Novo Produto",
+        description: "Descrição do produto",
+        price: 0,
+        imageUrl: "",
+        images: [],
+        sizes: [],
+        colors: [],
+        category: "Outros",
+        stock: 0,
+        featured: false,
+      };
+
+      await createProduct(newProductData);
+      // O produto será adicionado ao state pelo createProduct
+      // Selecionar o primeiro produto da lista (o mais recente)
+      setSuccessMessage("Produto criado! Edite os detalhes.");
+      setTimeout(() => setSuccessMessage(""), 3000);
+    } catch {
+      setErrorMessage("Erro ao criar produto. Tente novamente.");
+      setTimeout(() => setErrorMessage(""), 3000);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const handleDeleteProduct = () => {
+  const handleDeleteProduct = async () => {
     if (selectedProduct && confirm("Tem certeza que deseja excluir este produto?")) {
-      setProducts((prev) => prev.filter((p) => p.id !== selectedProduct.id));
-      setSelectedProduct(null);
-      setEditForm({});
+      setIsSaving(true);
+      setErrorMessage("");
+
+      try {
+        await deleteProduct(selectedProduct.id);
+        setSelectedProduct(null);
+        setEditForm({});
+        setSuccessMessage("Produto excluído com sucesso!");
+        setTimeout(() => setSuccessMessage(""), 3000);
+      } catch {
+        setErrorMessage("Erro ao excluir produto. Tente novamente.");
+        setTimeout(() => setErrorMessage(""), 3000);
+      } finally {
+        setIsSaving(false);
+      }
     }
   };
 
@@ -146,7 +178,7 @@ export default function AdminPanel() {
             </div>
             <div className="flex items-center gap-4">
               <Link
-                href="/"
+                href="/loja"
                 className="text-sm text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
               >
                 Ver Loja
@@ -170,14 +202,23 @@ export default function AdminPanel() {
               <h2 className="text-xl font-bold">Produtos</h2>
               <button
                 onClick={handleAddNewProduct}
-                className="px-4 py-2 bg-[var(--foreground)] text-[var(--background)] rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
+                disabled={isSaving}
+                className="px-4 py-2 bg-[var(--foreground)] text-[var(--background)] rounded-lg text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
               >
-                + Novo Produto
+                {isSaving ? "Criando..." : "+ Novo Produto"}
               </button>
             </div>
 
             <div className="space-y-2 max-h-[calc(100vh-200px)] overflow-y-auto">
-              {products.map((product) => (
+              {isLoading ? (
+                <div className="text-center py-8 text-[var(--muted)]">
+                  Carregando produtos...
+                </div>
+              ) : products.length === 0 ? (
+                <div className="text-center py-8 text-[var(--muted)]">
+                  Nenhum produto cadastrado
+                </div>
+              ) : products.map((product) => (
                 <button
                   key={product.id}
                   onClick={() => handleSelectProduct(product)}
@@ -226,9 +267,10 @@ export default function AdminPanel() {
                         </button>
                         <button
                           onClick={handleDeleteProduct}
-                          className="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
+                          disabled={isSaving}
+                          className="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
                         >
-                          Excluir
+                          {isSaving ? "Excluindo..." : "Excluir"}
                         </button>
                       </>
                     ) : (
@@ -244,9 +286,10 @@ export default function AdminPanel() {
                         </button>
                         <button
                           onClick={handleSave}
-                          className="px-4 py-2 bg-[var(--foreground)] text-[var(--background)] rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
+                          disabled={isSaving}
+                          className="px-4 py-2 bg-[var(--foreground)] text-[var(--background)] rounded-lg text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
                         >
-                          Salvar
+                          {isSaving ? "Salvando..." : "Salvar"}
                         </button>
                       </>
                     )}
@@ -256,6 +299,12 @@ export default function AdminPanel() {
                 {successMessage && (
                   <div className="mb-6 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-green-600 dark:text-green-400 text-sm">
                     {successMessage}
+                  </div>
+                )}
+
+                {errorMessage && (
+                  <div className="mb-6 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm">
+                    {errorMessage}
                   </div>
                 )}
 
