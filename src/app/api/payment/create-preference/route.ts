@@ -14,6 +14,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Pega a URL base: da env, ou do header origin, ou fallback localhost
+    const origin = request.headers.get("origin") || request.headers.get("referer")?.split("/").slice(0, 3).join("/");
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || origin || "http://localhost:3000";
+
     const client = new MercadoPagoConfig({ accessToken });
     const preference = new Preference(client);
 
@@ -39,9 +43,9 @@ export async function POST(request: NextRequest) {
         },
       },
       back_urls: {
-        success: `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/checkout/success`,
-        failure: `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/checkout/failure`,
-        pending: `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/checkout/pending`,
+        success: `${baseUrl}/checkout/success`,
+        failure: `${baseUrl}/checkout/failure`,
+        pending: `${baseUrl}/checkout/pending`,
       },
       auto_return: "approved" as const,
       statement_descriptor: "LOJA ROUPAS",
