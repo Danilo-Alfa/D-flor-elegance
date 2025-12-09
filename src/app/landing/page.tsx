@@ -70,7 +70,7 @@ const features = [
   },
 ];
 
-export default function HomePage() {
+export default function LandingPage() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [collectionsVisible, setCollectionsVisible] = useState(false);
@@ -131,9 +131,9 @@ export default function HomePage() {
   const navLinks = [
     { name: "Inicio", href: "#" },
     { name: "Colecoes", href: "#collections" },
+    { name: "Novidades", href: "#new" },
     { name: "Sobre", href: "#about" },
     { name: "Contato", href: "#contact" },
-    { name: "Loja", href: "/loja" },
   ];
 
   return (
@@ -149,7 +149,7 @@ export default function HomePage() {
         <div className="container mx-auto px-6 lg:px-12">
           <div className="flex items-center justify-between">
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-2">
+            <Link href="/landing" className="flex items-center gap-2">
               <div className="flex flex-col items-center">
                 <span className="font-display text-2xl md:text-3xl tracking-wide text-[var(--foreground)]">
                   D&apos; flor
@@ -192,8 +192,7 @@ export default function HomePage() {
                   <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                 </svg>
               </button>
-              <Link
-                href="/loja"
+              <button
                 className="p-2 hover:text-[var(--primary)] transition-colors duration-300"
                 aria-label="Sacola"
               >
@@ -202,7 +201,7 @@ export default function HomePage() {
                   <line x1="3" y1="6" x2="21" y2="6"/>
                   <path d="M16 10a4 4 0 0 1-8 0"/>
                 </svg>
-              </Link>
+              </button>
 
               {/* Mobile Menu Button */}
               <button
@@ -302,9 +301,9 @@ export default function HomePage() {
                 className="flex flex-col sm:flex-row gap-4 opacity-0 animate-reveal-up"
                 style={{ animationDelay: "1s" }}
               >
-                <Link href="/loja" className="btn-elegant text-center">
-                  Ver Produtos
-                </Link>
+                <a href="#collections" className="btn-elegant text-center">
+                  Explorar Colecao
+                </a>
                 <a href="#about" className="btn-outline-elegant text-center">
                   Nossa Historia
                 </a>
@@ -373,13 +372,13 @@ export default function HomePage() {
 
                     {/* Hover Button */}
                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                      <Link href="/loja" className="btn-elegant flex items-center gap-2">
+                      <span className="btn-elegant flex items-center gap-2">
                         Ver Colecao
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                           <line x1="5" y1="12" x2="19" y2="12"/>
                           <polyline points="12 5 19 12 12 19"/>
                         </svg>
-                      </Link>
+                      </span>
                     </div>
                   </div>
 
@@ -582,7 +581,7 @@ export default function HomePage() {
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 mb-16">
             {/* Brand Column */}
             <div className="lg:col-span-1">
-              <Link href="/" className="inline-block mb-6">
+              <Link href="/landing" className="inline-block mb-6">
                 <div className="flex flex-col items-start">
                   <span className="font-display text-3xl tracking-wide text-[var(--foreground)]">D&apos; flor</span>
                   <span className="font-body text-xs tracking-[0.4em] uppercase text-[var(--muted-foreground)] -mt-1">
@@ -619,10 +618,10 @@ export default function HomePage() {
             <div>
               <h4 className="font-display text-lg text-[var(--foreground)] mb-6">Navegacao</h4>
               <nav className="flex flex-col gap-3">
-                {["Inicio", "Colecoes", "Sobre", "Contato", "Loja"].map((link) => (
+                {["Inicio", "Colecoes", "Novidades", "Sobre", "Contato"].map((link) => (
                   <a
                     key={link}
-                    href={link === "Loja" ? "/loja" : "#"}
+                    href="#"
                     className="font-body text-sm text-[var(--muted-foreground)] hover:text-[var(--foreground)] transition-colors duration-300"
                   >
                     {link}

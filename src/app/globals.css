@@ -1,18 +1,25 @@
 @import "tailwindcss";
 
 :root {
-  /* Paleta D'Flor Elegance - baseada na logo */
-  --background: #FDF8F3;        /* Creme claro */
-  --foreground: #5D4E37;        /* Marrom escuro */
-  --primary: #C9A89A;           /* Rosa/bege rosado */
-  --primary-hover: #B8968A;     /* Rosa mais escuro */
-  --secondary: #F5EDE6;         /* Creme médio */
-  --accent: #7A8B6E;            /* Verde oliva/sage */
-  --card-bg: #FFFFFF;           /* Branco */
-  --border: #E2D5C8;            /* Bege */
-  --muted: #9C8B7A;             /* Marrom claro */
-  --success: #7A8B6E;           /* Verde oliva */
-  --error: #C97A7A;             /* Rosa avermelhado */
+  /* Paleta D'Flor Elegance - CORES CLARAS do Lovable */
+  --background: #F9F6F1;                     /* Creme muito claro/quase branco */
+  --foreground: #5D4E3D;                     /* Marrom escuro para texto */
+  --primary: #C4A68A;                        /* Rosa/bege rosado - igual imagem */
+  --primary-hover: #B89878;                  /* Rosa mais escuro */
+  --primary-foreground: #FFFFFF;             /* Texto branco sobre primary */
+  --secondary: #F5F0EA;                      /* Creme claro para seções */
+  --secondary-foreground: #5D4E3D;           /* Texto escuro */
+  --accent: #8B9A7D;                         /* Verde oliva/sage */
+  --accent-foreground: #FFFFFF;              /* Texto claro sobre accent */
+  --card-bg: #FAF7F3;                        /* Card muito claro */
+  --card-foreground: #5D4E3D;                /* Texto do card */
+  --border: #E8E0D5;                         /* Borda bege clara */
+  --input: #E8E0D5;                          /* Input border */
+  --ring: #C4A68A;                           /* Focus ring */
+  --muted: #A69485;                          /* Marrom claro */
+  --muted-foreground: #8B7D6B;               /* Texto secundario */
+  --success: #8B9A7D;                        /* Verde oliva */
+  --error: #C97A7A;                          /* Vermelho suave */
 }
 
 @theme inline {
@@ -20,11 +27,18 @@
   --color-foreground: var(--foreground);
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
+  --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
   --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
   --color-card-bg: var(--card-bg);
+  --color-card-foreground: var(--card-foreground);
   --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
   --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
   --color-success: var(--success);
   --color-error: var(--error);
   --font-sans: var(--font-geist-sans);
@@ -33,23 +47,166 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    /* Tema escuro D'Flor Elegance */
-    --background: #1F1A16;        /* Marrom muito escuro */
-    --foreground: #F5EDE6;        /* Creme claro */
-    --primary: #C9A89A;           /* Rosa/bege rosado */
-    --primary-hover: #D4B8AA;     /* Rosa mais claro */
-    --secondary: #2D2620;         /* Marrom escuro */
-    --accent: #8FA082;            /* Verde sage claro */
-    --card-bg: #28221C;           /* Marrom card */
-    --border: #3D3530;            /* Borda marrom */
-    --muted: #9C8B7A;             /* Marrom claro */
+    /* Tema escuro - manter claro para D'Flor */
+    --background: #F9F6F1;
+    --foreground: #5D4E3D;
+    --primary: #C4A68A;
+    --primary-hover: #B89878;
+    --primary-foreground: #FFFFFF;
+    --secondary: #F5F0EA;
+    --secondary-foreground: #5D4E3D;
+    --accent: #8B9A7D;
+    --accent-foreground: #FFFFFF;
+    --card-bg: #FAF7F3;
+    --card-foreground: #5D4E3D;
+    --border: #E8E0D5;
+    --input: #E8E0D5;
+    --ring: #C4A68A;
+    --muted: #A69485;
+    --muted-foreground: #8B7D6B;
   }
+}
+
+/* Custom shadows - igual ao Lovable */
+:root {
+  --shadow-soft: 0 4px 20px -4px rgba(93, 78, 61, 0.08);
+  --shadow-elegant: 0 10px 40px -10px rgba(93, 78, 61, 0.12);
+  --shadow-glow: 0 0 40px rgba(196, 166, 138, 0.4);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+/* Shadow utilities */
+.shadow-soft {
+  box-shadow: var(--shadow-soft);
+}
+
+.shadow-elegant {
+  box-shadow: var(--shadow-elegant);
+}
+
+.shadow-glow {
+  box-shadow: var(--shadow-glow);
+}
+
+/* Elegant Buttons */
+.btn-elegant {
+  padding: 1rem 2rem;
+  background: var(--primary);
+  color: var(--primary-foreground);
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: 0.875rem;
+  transition: all 0.5s ease;
+}
+
+.btn-elegant:hover {
+  box-shadow: var(--shadow-glow);
+  transform: scale(1.05);
+}
+
+.btn-outline-elegant {
+  padding: 1rem 2rem;
+  background: transparent;
+  border: 1px solid var(--foreground);
+  color: var(--foreground);
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+}
+
+.btn-outline-elegant:hover {
+  background: var(--foreground);
+  color: var(--background);
+}
+
+/* Card Elegant */
+.card-elegant {
+  padding: 2rem;
+  background: var(--card-bg);
+  box-shadow: var(--shadow-soft);
+  transition: all 0.5s ease;
+}
+
+.card-elegant:hover {
+  box-shadow: var(--shadow-elegant);
+  transform: translateY(-4px);
+}
+
+/* Section Padding */
+.section-padding {
+  padding: 5rem 0;
+}
+
+@media (min-width: 768px) {
+  .section-padding {
+    padding: 7rem 0;
+  }
+}
+
+/* Animations */
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+.animate-reveal-up {
+  animation: reveal-up 0.8s ease forwards;
+}
+
+.animate-slide-in-left {
+  animation: slide-in-left 0.8s ease forwards;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.8s ease forwards;
+}
+
+/* Font Display */
+.font-display {
+  font-family: var(--font-playfair), 'Playfair Display', Georgia, serif;
+  font-weight: 400;
+}
+
+.font-body {
+  font-family: var(--font-geist-sans), 'Segoe UI', system-ui, sans-serif;
 }
 
 /* Scrollbar styles */
