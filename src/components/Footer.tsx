@@ -2,6 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 export function Footer() {
   return (
@@ -11,13 +12,17 @@ export function Footer() {
           {/* Brand */}
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 bg-[var(--foreground)] rounded-lg flex items-center justify-center">
-                <span className="text-[var(--background)] font-bold text-sm">LR</span>
-              </div>
-              <span className="font-bold text-xl">Loja Roupas</span>
+              <Image
+                src="/logo.jpg"
+                alt="D'Flor Elegance"
+                width={40}
+                height={40}
+                className="rounded-full object-cover"
+              />
+              <span className="font-bold text-xl">D'Flor Elegance</span>
             </div>
             <p className="text-[var(--muted)] max-w-sm">
-              Sua loja de moda favorita. Encontre as melhores peças para todas as ocasiões com qualidade e estilo.
+              Moda feminina com elegância e estilo. Encontre as melhores peças para todas as ocasiões.
             </p>
             <div className="flex gap-4 mt-6">
               <a
@@ -108,7 +113,7 @@ export function Footer() {
         {/* Bottom */}
         <div className="mt-12 pt-8 border-t border-[var(--border)] flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-[var(--muted)] text-sm">
-            © {new Date().getFullYear()} Loja Roupas. Todos os direitos reservados.
+            © {new Date().getFullYear()} D'Flor Elegance. Todos os direitos reservados.
           </p>
           <div className="flex items-center gap-4">
             <img

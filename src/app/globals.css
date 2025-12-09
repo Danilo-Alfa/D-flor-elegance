@@ -1,17 +1,18 @@
 @import "tailwindcss";
 
 :root {
-  --background: #fafafa;
-  --foreground: #171717;
-  --primary: #737373;
-  --primary-hover: #525252;
-  --secondary: #e5e5e5;
-  --accent: #a3a3a3;
-  --card-bg: #ffffff;
-  --border: #d4d4d4;
-  --muted: #a3a3a3;
-  --success: #22c55e;
-  --error: #ef4444;
+  /* Paleta D'Flor Elegance - baseada na logo */
+  --background: #FDF8F3;        /* Creme claro */
+  --foreground: #5D4E37;        /* Marrom escuro */
+  --primary: #C9A89A;           /* Rosa/bege rosado */
+  --primary-hover: #B8968A;     /* Rosa mais escuro */
+  --secondary: #F5EDE6;         /* Creme médio */
+  --accent: #7A8B6E;            /* Verde oliva/sage */
+  --card-bg: #FFFFFF;           /* Branco */
+  --border: #E2D5C8;            /* Bege */
+  --muted: #9C8B7A;             /* Marrom claro */
+  --success: #7A8B6E;           /* Verde oliva */
+  --error: #C97A7A;             /* Rosa avermelhado */
 }
 
 @theme inline {
@@ -32,15 +33,16 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-    --primary: #a3a3a3;
-    --primary-hover: #d4d4d4;
-    --secondary: #262626;
-    --accent: #737373;
-    --card-bg: #171717;
-    --border: #404040;
-    --muted: #737373;
+    /* Tema escuro D'Flor Elegance */
+    --background: #1F1A16;        /* Marrom muito escuro */
+    --foreground: #F5EDE6;        /* Creme claro */
+    --primary: #C9A89A;           /* Rosa/bege rosado */
+    --primary-hover: #D4B8AA;     /* Rosa mais claro */
+    --secondary: #2D2620;         /* Marrom escuro */
+    --accent: #8FA082;            /* Verde sage claro */
+    --card-bg: #28221C;           /* Marrom card */
+    --border: #3D3530;            /* Borda marrom */
+    --muted: #9C8B7A;             /* Marrom claro */
   }
 }
 

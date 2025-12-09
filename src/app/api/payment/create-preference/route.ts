@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
         pending: `${baseUrl}/checkout/pending`,
       },
       auto_return: "approved" as const,
-      statement_descriptor: "LOJA ROUPAS",
+      statement_descriptor: "DFLOR ELEGANCE",
       external_reference: `order_${Date.now()}`,
     };
 

@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useStore } from "@/context/StoreContext";
 import { CartDrawer } from "./CartDrawer";
 
@@ -16,11 +17,8 @@ export function Header() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-[var(--foreground)] rounded-lg flex items-center justify-center">
-                <span className="text-[var(--background)] font-bold text-sm">LR</span>
-              </div>
-              <span className="font-bold text-xl hidden sm:block">Loja Roupas</span>
+            <Link href="/" className="flex items-center">
+              <span className="font-semibold text-xl tracking-wide">D'Flor Elegance</span>
             </Link>
 
             {/* Desktop Navigation */}

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import Image from "next/image";
 import { useStore } from "@/context/StoreContext";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -45,38 +46,49 @@ export default function Home() {
       <main className="flex-1">
         {/* Hero Section */}
         <section className="relative bg-[var(--secondary)] overflow-hidden">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-32">
-            <div className="max-w-2xl">
-              <h1 className="text-4xl lg:text-6xl font-bold text-[var(--foreground)] mb-6">
-                Vista-se com
-                <span className="block text-[var(--primary)]">Estilo e Elegância</span>
-              </h1>
-              <p className="text-lg text-[var(--muted)] mb-8">
-                Descubra as últimas tendências em moda. Peças exclusivas para todas as ocasiões,
-                com qualidade premium e preços acessíveis.
-              </p>
-              <div className="flex flex-wrap gap-4">
-                <a
-                  href="#produtos"
-                  className="px-8 py-3 bg-[var(--foreground)] text-[var(--background)] rounded-xl font-semibold hover:opacity-90 transition-opacity"
-                >
-                  Ver Coleção
-                </a>
-                <a
-                  href="#sobre"
-                  className="px-8 py-3 border-2 border-[var(--foreground)] text-[var(--foreground)] rounded-xl font-semibold hover:bg-[var(--foreground)] hover:text-[var(--background)] transition-colors"
-                >
-                  Saiba Mais
-                </a>
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
+            <div className="grid lg:grid-cols-2 gap-12 items-center">
+              {/* Text Content */}
+              <div>
+                <h1 className="text-4xl lg:text-5xl font-bold text-[var(--foreground)] mb-6">
+                  Vista-se com
+                  <span className="block text-[var(--primary)]">Estilo e Elegância</span>
+                </h1>
+                <p className="text-lg text-[var(--muted)] mb-8">
+                  Descubra as últimas tendências em moda feminina. Peças exclusivas para todas as ocasiões,
+                  com qualidade premium e preços acessíveis.
+                </p>
+                <div className="flex flex-wrap gap-4">
+                  <a
+                    href="#produtos"
+                    className="px-8 py-3 bg-[var(--foreground)] text-[var(--background)] rounded-xl font-semibold hover:opacity-90 transition-opacity"
+                  >
+                    Ver Coleção
+                  </a>
+                  <a
+                    href="#sobre"
+                    className="px-8 py-3 border-2 border-[var(--foreground)] text-[var(--foreground)] rounded-xl font-semibold hover:bg-[var(--foreground)] hover:text-[var(--background)] transition-colors"
+                  >
+                    Saiba Mais
+                  </a>
+                </div>
+              </div>
+
+              {/* Logo */}
+              <div className="flex justify-center lg:justify-end">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-[var(--accent)] rounded-full blur-3xl opacity-20 scale-110" />
+                  <Image
+                    src="/logo.jpg"
+                    alt="D'Flor Elegance"
+                    width={320}
+                    height={320}
+                    className="relative rounded-full object-cover shadow-2xl border-4 border-[var(--background)]"
+                    priority
+                  />
+                </div>
               </div>
             </div>
-          </div>
-
-          {/* Decorative Elements */}
-          <div className="absolute top-0 right-0 w-1/2 h-full hidden lg:block">
-            <div className="absolute inset-0 bg-gradient-to-l from-transparent to-[var(--secondary)]" />
-            <div className="absolute top-10 right-10 w-64 h-64 rounded-full bg-[var(--border)] opacity-50 blur-3xl" />
-            <div className="absolute bottom-10 right-32 w-48 h-48 rounded-full bg-[var(--accent)] opacity-30 blur-3xl" />
           </div>
         </section>
 

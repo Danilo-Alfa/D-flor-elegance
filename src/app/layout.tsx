@@ -14,8 +14,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Loja Roupas - Moda e Estilo",
-  description: "Sua loja de moda favorita. Encontre as melhores peças para todas as ocasiões com qualidade e estilo.",
+  title: "D'Flor Elegance - Moda Feminina",
+  description: "D'Flor Elegance - Moda feminina com elegância e estilo. Encontre as melhores peças para todas as ocasiões.",
+  icons: {
+    icon: "/logo.jpg",
+    apple: "/logo.jpg",
+  },
 };
 
 export default function RootLayout({
