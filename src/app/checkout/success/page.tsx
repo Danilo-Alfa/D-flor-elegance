@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useStore } from "@/context/StoreContext";
@@ -15,7 +15,7 @@ interface OrderData {
   shipping_deadline: string;
 }
 
-export default function CheckoutSuccess() {
+function CheckoutSuccessContent() {
   const { clearCart } = useStore();
   const searchParams = useSearchParams();
   const orderNumber = searchParams.get("order");
@@ -152,5 +152,24 @@ export default function CheckoutSuccess() {
         </div>
       </div>
     </div>
+  );
+}
+
+function LoadingFallback() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-[var(--background)] px-4">
+      <div className="text-center">
+        <div className="w-12 h-12 border-4 border-[var(--border)] border-t-[var(--foreground)] rounded-full animate-spin mx-auto mb-4"></div>
+        <p className="text-[var(--muted)]">Carregando...</p>
+      </div>
+    </div>
+  );
+}
+
+export default function CheckoutSuccess() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
+      <CheckoutSuccessContent />
+    </Suspense>
   );
 }
