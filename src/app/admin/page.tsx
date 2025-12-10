@@ -169,8 +169,13 @@ export default function AdminPanel() {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-4">
               <Link href="/" className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-[var(--foreground)] rounded-lg flex items-center justify-center">
-                  <span className="text-[var(--background)] font-bold text-sm">LR</span>
+                <div className="flex flex-col items-center">
+                  <span className="font-display text-xl tracking-wide">
+                    D' flor
+                  </span>
+                  <span className="font-body text-[8px] tracking-[0.3em] uppercase text-[var(--muted)] -mt-1">
+                    elegance
+                  </span>
                 </div>
               </Link>
               <span className="text-[var(--muted)]">/</span>

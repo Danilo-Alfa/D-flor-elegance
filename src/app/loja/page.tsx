@@ -10,7 +10,7 @@ import { ProductModal } from "@/components/ProductModal";
 import { Product } from "@/types";
 
 export default function LojaPage() {
-  const { products } = useStore();
+  const { products, searchQuery, setSearchQuery } = useStore();
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>("Todos");
@@ -25,9 +25,25 @@ export default function LojaPage() {
   }, [products]);
 
   const filteredProducts = useMemo(() => {
-    if (selectedCategory === "Todos") return products;
-    return products.filter((p) => p.category === selectedCategory);
-  }, [products, selectedCategory]);
+    let filtered = products;
+
+    // Filtrar por categoria
+    if (selectedCategory !== "Todos") {
+      filtered = filtered.filter((p) => p.category === selectedCategory);
+    }
+
+    // Filtrar por busca
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter((p) =>
+        p.name.toLowerCase().includes(query) ||
+        p.description.toLowerCase().includes(query) ||
+        p.category.toLowerCase().includes(query)
+      );
+    }
+
+    return filtered;
+  }, [products, selectedCategory, searchQuery]);
 
   const handleProductClick = (product: Product) => {
     setSelectedProduct(product);
@@ -156,12 +172,27 @@ export default function LojaPage() {
             <div className="flex items-center justify-between mb-8">
               <div>
                 <h2 className="text-2xl lg:text-3xl font-bold text-[var(--foreground)]">
-                  {selectedCategory === "Todos" ? "Todos os Produtos" : selectedCategory}
+                  {searchQuery
+                    ? `Resultados para "${searchQuery}"`
+                    : selectedCategory === "Todos"
+                    ? "Todos os Produtos"
+                    : selectedCategory}
                 </h2>
                 <p className="text-muted-foreground mt-1">
                   {filteredProducts.length} {filteredProducts.length === 1 ? "produto encontrado" : "produtos encontrados"}
                 </p>
               </div>
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="flex items-center gap-2 px-4 py-2 bg-[var(--secondary)] hover:bg-[var(--border)] rounded-lg text-sm transition-colors"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M18 6 6 18M6 6l12 12"/>
+                  </svg>
+                  Limpar busca
+                </button>
+              )}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -189,7 +220,19 @@ export default function LojaPage() {
                     d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"
                   />
                 </svg>
-                <p className="text-muted-foreground">Nenhum produto encontrado nesta categoria</p>
+                <p className="text-muted-foreground">
+                  {searchQuery
+                    ? `Nenhum produto encontrado para "${searchQuery}"`
+                    : "Nenhum produto encontrado nesta categoria"}
+                </p>
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="mt-4 px-6 py-2 bg-[var(--foreground)] text-[var(--background)] rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
+                  >
+                    Ver todos os produtos
+                  </button>
+                )}
               </div>
             )}
           </div>

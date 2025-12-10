@@ -2,14 +2,18 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useStore } from "@/context/StoreContext";
 import { CartDrawer } from "./CartDrawer";
 
 export function Header() {
-  const { cartCount } = useStore();
+  const router = useRouter();
+  const { cartCount, searchQuery, setSearchQuery } = useStore();
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [localSearch, setLocalSearch] = useState(searchQuery);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -18,6 +22,22 @@ export function Header() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    setLocalSearch(searchQuery);
+  }, [searchQuery]);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSearchQuery(localSearch);
+    router.push("/loja#produtos");
+    setIsSearchOpen(false);
+  };
+
+  const handleClearSearch = () => {
+    setLocalSearch("");
+    setSearchQuery("");
+  };
 
   return (
     <>
@@ -64,25 +84,63 @@ export function Header() {
             {/* Right Section */}
             <div className="flex items-center gap-4">
               {/* Search */}
-              <button
-                className="p-2 hover:text-[var(--primary)] transition-colors duration-300"
-                aria-label="Buscar"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
+              <div className="relative">
+                <button
+                  onClick={() => setIsSearchOpen(!isSearchOpen)}
+                  className="p-2 hover:text-[var(--primary)] transition-colors duration-300"
+                  aria-label="Buscar"
                 >
-                  <circle cx="11" cy="11" r="8" />
-                  <path d="m21 21-4.3-4.3" />
-                </svg>
-              </button>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <circle cx="11" cy="11" r="8" />
+                    <path d="m21 21-4.3-4.3" />
+                  </svg>
+                </button>
+
+                {/* Search Dropdown */}
+                {isSearchOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-72 bg-[var(--background)] border border-[var(--border)] rounded-xl shadow-lg p-3 z-50">
+                    <form onSubmit={handleSearch} className="flex gap-2">
+                      <div className="relative flex-1">
+                        <input
+                          type="text"
+                          value={localSearch}
+                          onChange={(e) => setLocalSearch(e.target.value)}
+                          placeholder="Buscar produtos..."
+                          className="w-full px-4 py-2 pr-8 rounded-lg border border-[var(--border)] bg-[var(--secondary)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                          autoFocus
+                        />
+                        {localSearch && (
+                          <button
+                            type="button"
+                            onClick={handleClearSearch}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--muted)] hover:text-[var(--foreground)]"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                              <path d="M18 6 6 18M6 6l12 12"/>
+                            </svg>
+                          </button>
+                        )}
+                      </div>
+                      <button
+                        type="submit"
+                        className="px-4 py-2 bg-[var(--foreground)] text-[var(--background)] rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
+                      >
+                        Buscar
+                      </button>
+                    </form>
+                  </div>
+                )}
+              </div>
 
               {/* Favorites */}
               <button

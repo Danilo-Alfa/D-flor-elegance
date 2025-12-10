@@ -21,6 +21,8 @@ interface StoreContextType {
   deleteProduct: (productId: string) => Promise<void>;
   refreshProducts: () => Promise<void>;
   isLoading: boolean;
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -30,6 +32,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [user, setUser] = useState<User>({ isAdmin: false, isAuthenticated: false });
   const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Buscar produtos do backend
   const fetchProducts = useCallback(async () => {
@@ -221,6 +224,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         deleteProduct,
         refreshProducts,
         isLoading,
+        searchQuery,
+        setSearchQuery,
       }}
     >
       {children}

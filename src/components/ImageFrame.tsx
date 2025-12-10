@@ -17,7 +17,10 @@ export function ImageFrame({ src, alt, className = "", style }: ImageFrameProps)
   const isDirectImage = src.match(/\.(jpg|jpeg|png|gif|webp|svg|avif)(\?.*)?$/i) ||
                         src.includes("unsplash.com") ||
                         src.includes("cloudinary.com") ||
-                        src.includes("imgur.com");
+                        src.includes("imgur.com") ||
+                        src.includes("pinimg.com") ||
+                        src.includes("pexels.com") ||
+                        src.includes("pixabay.com");
 
   if (error) {
     return (
