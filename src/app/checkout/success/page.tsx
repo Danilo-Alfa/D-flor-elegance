@@ -1,15 +1,53 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useStore } from "@/context/StoreContext";
+
+interface OrderData {
+  order_number: string;
+  customer_name: string;
+  customer_email: string;
+  total: number;
+  status: string;
+  shipping_method: string;
+  shipping_deadline: string;
+}
 
 export default function CheckoutSuccess() {
   const { clearCart } = useStore();
+  const searchParams = useSearchParams();
+  const orderNumber = searchParams.get("order");
+  const [order, setOrder] = useState<OrderData | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     clearCart();
   }, [clearCart]);
+
+  useEffect(() => {
+    async function fetchOrder() {
+      if (!orderNumber) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/orders?order_number=${orderNumber}`);
+        const data = await response.json();
+        if (data && data.length > 0) {
+          setOrder(data[0]);
+        }
+      } catch (error) {
+        console.error("Erro ao buscar pedido:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchOrder();
+  }, [orderNumber]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[var(--background)] px-4">
@@ -33,6 +71,41 @@ export default function CheckoutSuccess() {
         <h1 className="text-3xl font-bold text-[var(--foreground)] mb-4">
           Pagamento Confirmado!
         </h1>
+
+        {loading ? (
+          <p className="text-[var(--muted)] mb-8">Carregando detalhes do pedido...</p>
+        ) : order ? (
+          <div className="bg-[var(--card-bg)] border border-[var(--border)] rounded-2xl p-6 mb-6">
+            <div className="text-left space-y-2">
+              <div className="flex justify-between">
+                <span className="text-[var(--muted)]">Pedido:</span>
+                <span className="font-bold text-[var(--foreground)]">
+                  #{order.order_number}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-[var(--muted)]">Total:</span>
+                <span className="font-semibold text-[var(--foreground)]">
+                  R$ {Number(order.total).toFixed(2).replace(".", ",")}
+                </span>
+              </div>
+              {order.shipping_method && (
+                <div className="flex justify-between">
+                  <span className="text-[var(--muted)]">Entrega:</span>
+                  <span className="text-[var(--foreground)]">
+                    {order.shipping_method} ({order.shipping_deadline})
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        ) : orderNumber ? (
+          <div className="bg-[var(--card-bg)] border border-[var(--border)] rounded-2xl p-6 mb-6">
+            <p className="text-[var(--foreground)]">
+              Pedido: <span className="font-bold">#{orderNumber}</span>
+            </p>
+          </div>
+        ) : null}
 
         <p className="text-[var(--muted)] mb-8">
           Obrigado pela sua compra! Você receberá um e-mail com os detalhes do pedido

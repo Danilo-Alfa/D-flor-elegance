@@ -183,6 +183,12 @@ export default function AdminPanel() {
             </div>
             <div className="flex items-center gap-4">
               <Link
+                href="/admin/pedidos"
+                className="text-sm text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+              >
+                Pedidos
+              </Link>
+              <Link
                 href="/loja"
                 className="text-sm text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
               >

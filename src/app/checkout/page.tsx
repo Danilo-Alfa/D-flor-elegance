@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useStore } from "@/context/StoreContext";
+import { useAuth } from "@/context/AuthContext";
 import { ImageFrame } from "@/components/ImageFrame";
 
 interface PayerForm {
@@ -30,6 +31,7 @@ interface ShippingOption {
 
 export default function CheckoutPage() {
   const { cart, cartTotal, removeFromCart, updateCartQuantity } = useStore();
+  const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [step, setStep] = useState(1);
@@ -48,6 +50,17 @@ export default function CheckoutPage() {
       zipCode: "",
     },
   });
+
+  // Preencher dados do usuário logado
+  useEffect(() => {
+    if (user) {
+      setPayerForm((prev) => ({
+        ...prev,
+        name: user.displayName || prev.name,
+        email: user.email || prev.email,
+      }));
+    }
+  }, [user]);
 
   // Frete
   const [shippingOptions, setShippingOptions] = useState<ShippingOption[]>([]);
@@ -197,14 +210,27 @@ export default function CheckoutPage() {
 
       const phoneNumbers = payerForm.phone.replace(/\D/g, "");
 
+      // Dados do carrinho para salvar no banco
+      const cartItems = cart.map((item) => ({
+        id: item.product.id,
+        name: item.product.name,
+        image_url: item.product.imageUrl,
+        quantity: item.quantity,
+        price: item.product.price,
+        selectedSize: item.selectedSize,
+        selectedColor: item.selectedColor.name,
+      }));
+
       const response = await fetch("/api/payment/create-preference", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           items,
+          cartItems,
           payer: {
             name: payerForm.name,
             email: payerForm.email,
+            cpf: payerForm.cpf,
             phone: {
               area_code: phoneNumbers.slice(0, 2),
               number: phoneNumbers.slice(2),
@@ -212,9 +238,18 @@ export default function CheckoutPage() {
             address: {
               street_name: payerForm.address.street,
               street_number: payerForm.address.number,
+              complement: payerForm.address.complement,
+              neighborhood: payerForm.address.neighborhood,
+              city: payerForm.address.city,
+              state: payerForm.address.state,
               zip_code: payerForm.address.zipCode.replace(/\D/g, ""),
             },
           },
+          shipping: selectedShipping ? {
+            method: selectedShipping.nome,
+            cost: selectedShipping.preco,
+            deadline: `${selectedShipping.prazo} dias úteis`,
+          } : null,
         }),
       });
 

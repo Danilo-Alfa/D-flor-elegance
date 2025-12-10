@@ -253,9 +253,21 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
               </div>
 
               {/* Stock Warning */}
-              {product.stock < 10 && (
-                <div className="mb-6 p-3 bg-[var(--secondary)] rounded-lg text-sm text-[var(--muted)]">
-                  ⚠️ Restam apenas {product.stock} unidades!
+              {product.stock > 0 && product.stock < 10 && (
+                <div className="mb-6 p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg text-sm text-yellow-700 dark:text-yellow-400">
+                  Restam apenas {product.stock} unidades!
+                </div>
+              )}
+
+              {/* Out of Stock Warning */}
+              {product.stock === 0 && (
+                <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-center">
+                  <p className="text-red-600 dark:text-red-400 font-semibold">
+                    Produto Esgotado
+                  </p>
+                  <p className="text-sm text-red-500 dark:text-red-400/80 mt-1">
+                    Este produto não está disponível no momento
+                  </p>
                 </div>
               )}
 
@@ -263,15 +275,25 @@ export function ProductModal({ product, isOpen, onClose }: ProductModalProps) {
               <div className="flex flex-col gap-3">
                 <button
                   onClick={handleBuyNow}
-                  className="w-full py-4 rounded-xl bg-[var(--foreground)] text-[var(--background)] font-semibold hover:opacity-90 transition-opacity"
+                  disabled={product.stock === 0}
+                  className={`w-full py-4 rounded-xl font-semibold transition-opacity ${
+                    product.stock === 0
+                      ? "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                      : "bg-[var(--foreground)] text-[var(--background)] hover:opacity-90"
+                  }`}
                 >
-                  Comprar Agora
+                  {product.stock === 0 ? "Indisponível" : "Comprar Agora"}
                 </button>
                 <button
                   onClick={handleAddToCart}
-                  className="w-full py-4 rounded-xl border-2 border-[var(--foreground)] text-[var(--foreground)] font-semibold hover:bg-[var(--secondary)] transition-colors"
+                  disabled={product.stock === 0}
+                  className={`w-full py-4 rounded-xl border-2 font-semibold transition-colors ${
+                    product.stock === 0
+                      ? "border-gray-300 dark:border-gray-700 text-gray-400 dark:text-gray-500 cursor-not-allowed"
+                      : "border-[var(--foreground)] text-[var(--foreground)] hover:bg-[var(--secondary)]"
+                  }`}
                 >
-                  Adicionar ao Carrinho
+                  {product.stock === 0 ? "Sem Estoque" : "Adicionar ao Carrinho"}
                 </button>
               </div>
 

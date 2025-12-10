@@ -59,9 +59,16 @@ export function ProductCard({ product, onClick }: ProductCardProps) {
       }}
     >
       {/* Discount Badge */}
-      {discount > 0 && (
+      {discount > 0 && product.stock > 0 && (
         <div className="absolute top-3 left-3 z-10 bg-[var(--foreground)] text-[var(--background)] px-2 py-1 rounded-md text-xs font-semibold">
           -{discount}%
+        </div>
+      )}
+
+      {/* Out of Stock Badge */}
+      {product.stock === 0 && (
+        <div className="absolute top-3 left-3 z-10 bg-red-500 text-white px-2 py-1 rounded-md text-xs font-semibold">
+          Esgotado
         </div>
       )}
 
@@ -70,7 +77,9 @@ export function ProductCard({ product, onClick }: ProductCardProps) {
         <ImageFrame
           src={product.imageUrl}
           alt={product.name}
-          className="w-full h-full object-cover transition-transform duration-500"
+          className={`w-full h-full object-cover transition-transform duration-500 ${
+            product.stock === 0 ? "grayscale opacity-70" : ""
+          }`}
           style={{
             transform: isHovering ? "scale(1.05)" : "scale(1)",
           }}
