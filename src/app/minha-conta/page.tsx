@@ -42,13 +42,13 @@ const statusLabels: Record<string, string> = {
 };
 
 const statusColors: Record<string, string> = {
-  pending_payment: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
-  paid: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
-  preparing: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
-  shipped: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400",
-  delivered: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400",
-  cancelled: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
-  refunded: "bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400",
+  pending_payment: "bg-amber-500/20 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 border border-amber-500/30",
+  paid: "bg-emerald-500/20 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 border border-emerald-500/30",
+  preparing: "bg-blue-500/20 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 border border-blue-500/30",
+  shipped: "bg-violet-500/20 text-violet-700 dark:bg-violet-500/20 dark:text-violet-400 border border-violet-500/30",
+  delivered: "bg-teal-500/20 text-teal-700 dark:bg-teal-500/20 dark:text-teal-400 border border-teal-500/30",
+  cancelled: "bg-red-500/20 text-red-700 dark:bg-red-500/20 dark:text-red-400 border border-red-500/30",
+  refunded: "bg-slate-500/20 text-slate-700 dark:bg-slate-500/20 dark:text-slate-400 border border-slate-500/30",
 };
 
 export default function MyAccountPage() {
@@ -203,25 +203,19 @@ export default function MyAccountPage() {
                   <button
                     key={order.id}
                     onClick={() => setSelectedOrder(order)}
-                    className={`w-full p-4 rounded-xl border transition-all text-left ${
+                    className={`w-full p-5 rounded-xl border transition-all text-left ${
                       selectedOrder?.id === order.id
                         ? "bg-[var(--foreground)] text-[var(--background)] border-[var(--foreground)]"
                         : "bg-[var(--card-bg)] border-[var(--border)] hover:border-[var(--foreground)]"
                     }`}
                   >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-bold">#{order.order_number}</span>
-                      <span
-                        className={`text-xs px-2 py-1 rounded-full ${
-                          selectedOrder?.id === order.id
-                            ? "bg-white/20"
-                            : statusColors[order.status]
-                        }`}
-                      >
-                        {statusLabels[order.status]}
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <span className="font-bold text-sm truncate">#{order.order_number}</span>
+                      <span className="font-bold text-lg whitespace-nowrap">
+                        {formatCurrency(order.total)}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between gap-2">
                       <span
                         className={`text-sm ${
                           selectedOrder?.id === order.id
@@ -231,8 +225,14 @@ export default function MyAccountPage() {
                       >
                         {formatDate(order.created_at)}
                       </span>
-                      <span className="font-semibold">
-                        {formatCurrency(order.total)}
+                      <span
+                        className={`text-xs px-3 py-1 rounded-full whitespace-nowrap font-medium ${
+                          selectedOrder?.id === order.id
+                            ? "bg-white/20"
+                            : statusColors[order.status]
+                        }`}
+                      >
+                        {statusLabels[order.status]}
                       </span>
                     </div>
                   </button>
@@ -255,7 +255,7 @@ export default function MyAccountPage() {
                     </p>
                   </div>
                   <span
-                    className={`px-3 py-1 rounded-full text-sm font-medium ${
+                    className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap ${
                       statusColors[selectedOrder.status]
                     }`}
                   >
@@ -271,8 +271,8 @@ export default function MyAccountPage() {
                       <div
                         className={`w-3 h-3 rounded-full ${
                           selectedOrder.created_at
-                            ? "bg-green-500"
-                            : "bg-gray-300"
+                            ? "bg-emerald-500"
+                            : "bg-gray-300 dark:bg-gray-600"
                         }`}
                       />
                       <span className="text-sm">
@@ -282,7 +282,7 @@ export default function MyAccountPage() {
                     <div className="flex items-center gap-3">
                       <div
                         className={`w-3 h-3 rounded-full ${
-                          selectedOrder.paid_at ? "bg-green-500" : "bg-gray-300"
+                          selectedOrder.paid_at ? "bg-emerald-500" : "bg-gray-300 dark:bg-gray-600"
                         }`}
                       />
                       <span className="text-sm">
@@ -295,8 +295,8 @@ export default function MyAccountPage() {
                       <div
                         className={`w-3 h-3 rounded-full ${
                           selectedOrder.shipped_at
-                            ? "bg-green-500"
-                            : "bg-gray-300"
+                            ? "bg-emerald-500"
+                            : "bg-gray-300 dark:bg-gray-600"
                         }`}
                       />
                       <span className="text-sm">
@@ -309,8 +309,8 @@ export default function MyAccountPage() {
                       <div
                         className={`w-3 h-3 rounded-full ${
                           selectedOrder.delivered_at
-                            ? "bg-green-500"
-                            : "bg-gray-300"
+                            ? "bg-emerald-500"
+                            : "bg-gray-300 dark:bg-gray-600"
                         }`}
                       />
                       <span className="text-sm">

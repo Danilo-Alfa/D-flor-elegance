@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense, useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useStore } from "@/context/StoreContext";
@@ -18,13 +18,39 @@ interface OrderData {
 function CheckoutSuccessContent() {
   const { clearCart } = useStore();
   const searchParams = useSearchParams();
-  const orderNumber = searchParams.get("order");
+  const orderNumberParam = searchParams.get("order");
+  const sessionId = searchParams.get("session_id");
   const [order, setOrder] = useState<OrderData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [orderNumber, setOrderNumber] = useState<string | null>(orderNumberParam);
+  const hasCleared = useRef(false);
 
   useEffect(() => {
-    clearCart();
+    if (!hasCleared.current) {
+      hasCleared.current = true;
+      clearCart();
+    }
   }, [clearCart]);
+
+  // Verificar status da sessao do Stripe Embedded Checkout
+  useEffect(() => {
+    async function verifySession() {
+      if (!sessionId) return;
+
+      try {
+        const response = await fetch(`/api/payment/create-session?session_id=${sessionId}`);
+        const data = await response.json();
+
+        if (data.orderNumber) {
+          setOrderNumber(data.orderNumber);
+        }
+      } catch (error) {
+        console.error("Erro ao verificar sessao:", error);
+      }
+    }
+
+    verifySession();
+  }, [sessionId]);
 
   useEffect(() => {
     async function fetchOrder() {

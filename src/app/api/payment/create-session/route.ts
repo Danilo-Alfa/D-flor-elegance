@@ -15,7 +15,7 @@ function generateOrderNumber(): string {
 
 export async function POST(request: NextRequest) {
   try {
-    const { items, payer, shipping, cartItems, paymentMethod } = await request.json();
+    const { items, payer, shipping, cartItems } = await request.json();
 
     if (!process.env.STRIPE_SECRET_KEY) {
       return NextResponse.json(
@@ -32,9 +32,6 @@ export async function POST(request: NextRequest) {
     );
     const shippingCost = shipping?.cost || 0;
     const total = subtotal + shippingCost;
-
-    // Converter para centavos (Stripe trabalha com a menor unidade da moeda)
-    const amountInCents = Math.round(total * 100);
 
     // Gerar numero do pedido
     const orderNumber = generateOrderNumber();
@@ -116,77 +113,101 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Descricao dos itens para o Stripe
-    const description = cartItems
-      .map((item: { name: string; quantity: number }) => `${item.quantity}x ${item.name}`)
-      .join(", ");
-
-    // Criar PaymentIntent baseado no metodo de pagamento
-    if (paymentMethod === "pix") {
-      // Criar PaymentIntent para PIX ja confirmado
-      const paymentIntent = await stripe.paymentIntents.create({
-        amount: amountInCents,
-        currency: "brl",
-        payment_method_types: ["pix"],
-        payment_method_data: {
-          type: "pix",
+    // Preparar line_items para o Stripe Checkout
+    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = cartItems.map(
+      (item: { name: string; quantity: number; price: number; selectedSize?: string; selectedColor?: string }) => ({
+        price_data: {
+          currency: "brl",
+          product_data: {
+            name: item.name,
+            description: [
+              item.selectedSize ? `Tamanho: ${item.selectedSize}` : null,
+              item.selectedColor ? `Cor: ${item.selectedColor}` : null,
+            ].filter(Boolean).join(" | ") || undefined,
+          },
+          unit_amount: Math.round(item.price * 100),
         },
-        confirm: true,
-        description: description,
-        metadata: {
-          order_number: orderNumber,
-          order_id: order.id,
+        quantity: item.quantity,
+      })
+    );
+
+    // Adicionar frete como item se existir
+    if (shippingCost > 0) {
+      lineItems.push({
+        price_data: {
+          currency: "brl",
+          product_data: {
+            name: `Frete - ${shipping?.method || "Entrega"}`,
+          },
+          unit_amount: Math.round(shippingCost * 100),
         },
-      });
-
-      // Atualizar pedido com o ID do PaymentIntent
-      await supabase
-        .from("orders")
-        .update({ stripe_payment_intent_id: paymentIntent.id })
-        .eq("id", order.id);
-
-      // Extrair dados do PIX
-      const pixData = paymentIntent.next_action?.pix_display_qr_code;
-
-      return NextResponse.json({
-        type: "pix",
-        clientSecret: paymentIntent.client_secret,
-        orderNumber: orderNumber,
-        pixData: pixData ? {
-          qrCode: pixData.data,
-          qrCodeBase64: pixData.image_url_png,
-          expiresAt: pixData.expires_at,
-        } : null,
-      });
-    } else {
-      // Criar PaymentIntent para cartao
-      const paymentIntent = await stripe.paymentIntents.create({
-        amount: amountInCents,
-        currency: "brl",
-        payment_method_types: ["card"],
-        description: description,
-        metadata: {
-          order_number: orderNumber,
-          order_id: order.id,
-        },
-      });
-
-      // Atualizar pedido com o ID do PaymentIntent
-      await supabase
-        .from("orders")
-        .update({ stripe_payment_intent_id: paymentIntent.id })
-        .eq("id", order.id);
-
-      return NextResponse.json({
-        type: "card",
-        clientSecret: paymentIntent.client_secret,
-        orderNumber: orderNumber,
+        quantity: 1,
       });
     }
+
+    // URL base do site
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_URL || "http://localhost:3000";
+
+    // Criar Checkout Session com modo embedded
+    // NOTA: PIX esta desabilitado temporariamente ate ser ativado no Stripe Dashboard
+    // Para ativar PIX: https://dashboard.stripe.com/settings/payment_methods
+    // Quando ativado, adicione "pix" ao array payment_method_types
+    const session = await stripe.checkout.sessions.create({
+      ui_mode: "embedded",
+      line_items: lineItems,
+      mode: "payment",
+      payment_method_types: ["card"],
+      customer_email: payer.email,
+      return_url: `${baseUrl}/checkout/success?session_id={CHECKOUT_SESSION_ID}&order=${orderNumber}`,
+      metadata: {
+        order_number: orderNumber,
+        order_id: order.id,
+      },
+    });
+
+    // Atualizar pedido com o ID da sessao
+    await supabase
+      .from("orders")
+      .update({ stripe_session_id: session.id })
+      .eq("id", order.id);
+
+    return NextResponse.json({
+      clientSecret: session.client_secret,
+      orderNumber: orderNumber,
+    });
   } catch (error) {
-    console.error("Erro ao criar PaymentIntent:", error);
+    console.error("Erro ao criar sessao de checkout:", error);
     return NextResponse.json(
-      { error: "Erro ao processar pagamento" },
+      { error: "Erro ao processar checkout" },
+      { status: 500 }
+    );
+  }
+}
+
+// Endpoint para verificar status da sessao
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const sessionId = searchParams.get("session_id");
+
+    if (!sessionId) {
+      return NextResponse.json(
+        { error: "session_id nao fornecido" },
+        { status: 400 }
+      );
+    }
+
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+    return NextResponse.json({
+      status: session.status,
+      customerEmail: session.customer_details?.email,
+      orderNumber: session.metadata?.order_number,
+    });
+  } catch (error) {
+    console.error("Erro ao verificar sessao:", error);
+    return NextResponse.json(
+      { error: "Erro ao verificar status" },
       { status: 500 }
     );
   }

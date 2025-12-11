@@ -2,9 +2,19 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useStore } from "@/context/StoreContext";
 import { useAuth } from "@/context/AuthContext";
 import { ImageFrame } from "@/components/ImageFrame";
+import { loadStripe } from "@stripe/stripe-js";
+import {
+  EmbeddedCheckoutProvider,
+  EmbeddedCheckout,
+} from "@stripe/react-stripe-js";
+
+const stripePromise = loadStripe(
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
+);
 
 interface PayerForm {
   name: string;
@@ -29,12 +39,179 @@ interface ShippingOption {
   prazo: number;
 }
 
+interface PixData {
+  qrCode: string;
+  qrCodeBase64: string;
+  expiresAt: number;
+}
+
+// Componente de pagamento PIX
+function PixPayment({
+  pixData,
+  orderNumber,
+  total,
+  onPaymentConfirmed,
+}: {
+  pixData: PixData;
+  orderNumber: string;
+  total: number;
+  onPaymentConfirmed: (orderNumber: string) => void;
+}) {
+  const [copied, setCopied] = useState(false);
+  const [checking, setChecking] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(
+    Math.max(0, Math.floor((pixData.expiresAt * 1000 - Date.now()) / 1000))
+  );
+
+  const copyToClipboard = async () => {
+    try {
+      await navigator.clipboard.writeText(pixData.qrCode);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 3000);
+    } catch {
+      console.error("Erro ao copiar");
+    }
+  };
+
+  // Polling para verificar pagamento a cada 5 segundos
+  useEffect(() => {
+    const checkPaymentStatus = async () => {
+      try {
+        setChecking(true);
+        const response = await fetch(`/api/payment/pix?order_number=${orderNumber}`);
+        const data = await response.json();
+
+        if (data.status === "paid") {
+          onPaymentConfirmed(orderNumber);
+        }
+      } catch (error) {
+        console.error("Erro ao verificar status:", error);
+      } finally {
+        setChecking(false);
+      }
+    };
+
+    // Verificar imediatamente e depois a cada 5 segundos
+    const interval = setInterval(checkPaymentStatus, 5000);
+
+    return () => clearInterval(interval);
+  }, [orderNumber, onPaymentConfirmed]);
+
+  // Contador regressivo
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => Math.max(0, prev - 1));
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
+
+  const minutes = Math.floor(timeLeft / 60);
+  const seconds = timeLeft % 60;
+
+  return (
+    <div className="space-y-6">
+      <div className="text-center p-6 bg-[var(--secondary)] rounded-xl">
+        <h3 className="text-lg font-bold mb-2">
+          Total: R$ {total.toFixed(2).replace(".", ",")}
+        </h3>
+        <p className="text-sm text-[var(--muted)]">
+          Pedido: {orderNumber}
+        </p>
+      </div>
+
+      <div className="flex flex-col items-center space-y-4">
+        <div className="bg-white p-4 rounded-xl">
+          <img
+            src={pixData.qrCodeBase64.startsWith("http")
+              ? pixData.qrCodeBase64
+              : pixData.qrCodeBase64.startsWith("data:")
+              ? pixData.qrCodeBase64
+              : `data:image/png;base64,${pixData.qrCodeBase64}`}
+            alt="QR Code PIX"
+            className="w-48 h-48"
+          />
+        </div>
+
+        <p className="text-sm text-[var(--muted)] text-center">
+          Escaneie o QR Code acima com o app do seu banco
+        </p>
+
+        <div className="w-full">
+          <label className="block text-sm font-medium mb-2">
+            Ou copie o codigo PIX:
+          </label>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={pixData.qrCode}
+              readOnly
+              className="flex-1 px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--background)] text-sm font-mono truncate"
+            />
+            <button
+              onClick={copyToClipboard}
+              className="px-4 py-3 bg-[var(--foreground)] text-[var(--background)] rounded-xl font-semibold hover:opacity-90 transition-opacity whitespace-nowrap"
+            >
+              {copied ? "Copiado!" : "Copiar"}
+            </button>
+          </div>
+        </div>
+
+        {/* Status de verificacao */}
+        {checking && (
+          <div className="flex items-center gap-2 text-[var(--muted)]">
+            <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+            <span className="text-sm">Verificando pagamento...</span>
+          </div>
+        )}
+
+        <div className="w-full p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl">
+          <div className="flex items-start gap-3">
+            <svg
+              className="w-5 h-5 text-yellow-600 dark:text-yellow-400 mt-0.5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <div>
+              <p className="font-medium text-yellow-800 dark:text-yellow-300">
+                Expira em {minutes}:{seconds.toString().padStart(2, "0")}
+              </p>
+              <p className="text-sm text-yellow-700 dark:text-yellow-400 mt-1">
+                Apos o pagamento, voce sera redirecionado automaticamente.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function CheckoutPage() {
-  const { cart, cartTotal, removeFromCart, updateCartQuantity } = useStore();
+  const { cart, cartTotal, removeFromCart, updateCartQuantity, clearCart } =
+    useStore();
   const { user } = useAuth();
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [step, setStep] = useState(1);
+  const [paymentMethodType, setPaymentMethodType] = useState<"pix" | "embedded">(
+    "embedded"
+  );
+  const [embeddedClientSecret, setEmbeddedClientSecret] = useState("");
+  const [orderNumber, setOrderNumber] = useState("");
+  const [pixData, setPixData] = useState<PixData | null>(null);
   const [payerForm, setPayerForm] = useState<PayerForm>({
     name: "",
     email: "",
@@ -51,7 +228,7 @@ export default function CheckoutPage() {
     },
   });
 
-  // Preencher dados do usuário logado
+  // Preencher dados do usuario logado
   useEffect(() => {
     if (user) {
       setPayerForm((prev) => ({
@@ -64,9 +241,13 @@ export default function CheckoutPage() {
 
   // Frete
   const [shippingOptions, setShippingOptions] = useState<ShippingOption[]>([]);
-  const [selectedShipping, setSelectedShipping] = useState<ShippingOption | null>(null);
+  const [selectedShipping, setSelectedShipping] =
+    useState<ShippingOption | null>(null);
   const [isCalculatingShipping, setIsCalculatingShipping] = useState(false);
   const [shippingError, setShippingError] = useState("");
+  const [deliveryMethod, setDeliveryMethod] = useState<"shipping" | "pickup">(
+    "shipping"
+  );
 
   const handleInputChange = (field: string, value: string) => {
     if (field.startsWith("address.")) {
@@ -105,52 +286,57 @@ export default function CheckoutPage() {
   };
 
   // Calcular frete quando o CEP estiver completo
-  const calculateShipping = useCallback(async (cep: string) => {
-    const cepLimpo = cep.replace(/\D/g, "");
-    if (cepLimpo.length !== 8) return;
+  const calculateShipping = useCallback(
+    async (cep: string) => {
+      const cepLimpo = cep.replace(/\D/g, "");
+      if (cepLimpo.length !== 8) return;
 
-    setIsCalculatingShipping(true);
-    setShippingError("");
+      setIsCalculatingShipping(true);
+      setShippingError("");
 
-    try {
-      const response = await fetch("/api/shipping/calculate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          cepDestino: cepLimpo,
-          peso: cart.reduce((acc, item) => acc + (item.quantity * 0.3), 0), // 300g por item
-        }),
-      });
+      try {
+        const response = await fetch("/api/shipping/calculate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            cepDestino: cepLimpo,
+            peso: cart.reduce((acc, item) => acc + item.quantity * 0.3, 0),
+          }),
+        });
 
-      const data = await response.json();
+        const data = await response.json();
 
-      if (data.error) {
-        throw new Error(data.error);
+        if (data.error) {
+          throw new Error(data.error);
+        }
+
+        setShippingOptions(data.opcoes);
+        if (data.opcoes.length > 0) {
+          const cheapest = data.opcoes.reduce(
+            (min: ShippingOption, opt: ShippingOption) =>
+              opt.preco < min.preco ? opt : min
+          );
+          setSelectedShipping(cheapest);
+        }
+      } catch (err) {
+        setShippingError("Erro ao calcular frete. Tente novamente.");
+        console.error(err);
+      } finally {
+        setIsCalculatingShipping(false);
       }
+    },
+    [cart]
+  );
 
-      setShippingOptions(data.opcoes);
-      // Seleciona a opção mais barata por padrão
-      if (data.opcoes.length > 0) {
-        const cheapest = data.opcoes.reduce((min: ShippingOption, opt: ShippingOption) =>
-          opt.preco < min.preco ? opt : min
-        );
-        setSelectedShipping(cheapest);
-      }
-    } catch (err) {
-      setShippingError("Erro ao calcular frete. Tente novamente.");
-      console.error(err);
-    } finally {
-      setIsCalculatingShipping(false);
-    }
-  }, [cart]);
-
-  // Buscar endereço pelo CEP (ViaCEP)
+  // Buscar endereco pelo CEP (ViaCEP)
   const fetchAddressByCep = async (cep: string) => {
     const cepLimpo = cep.replace(/\D/g, "");
     if (cepLimpo.length !== 8) return;
 
     try {
-      const response = await fetch(`https://viacep.com.br/ws/${cepLimpo}/json/`);
+      const response = await fetch(
+        `https://viacep.com.br/ws/${cepLimpo}/json/`
+      );
       const data = await response.json();
 
       if (!data.erro) {
@@ -182,9 +368,11 @@ export default function CheckoutPage() {
     }
   }, [payerForm.address.zipCode, calculateShipping]);
 
-  const orderTotal = cartTotal + (selectedShipping?.preco || 0);
+  const shippingCost =
+    deliveryMethod === "pickup" ? 0 : selectedShipping?.preco || 0;
+  const orderTotal = cartTotal + shippingCost;
 
-  const handleCheckout = async () => {
+  const createPaymentIntent = async () => {
     if (cart.length === 0) return;
 
     setIsLoading(true);
@@ -198,8 +386,7 @@ export default function CheckoutPage() {
         unit_price: item.product.price,
       }));
 
-      // Adiciona o frete como item
-      if (selectedShipping) {
+      if (deliveryMethod === "shipping" && selectedShipping) {
         items.push({
           id: "shipping",
           title: `Frete ${selectedShipping.nome}`,
@@ -210,7 +397,6 @@ export default function CheckoutPage() {
 
       const phoneNumbers = payerForm.phone.replace(/\D/g, "");
 
-      // Dados do carrinho para salvar no banco
       const cartItems = cart.map((item) => ({
         id: item.product.id,
         name: item.product.name,
@@ -221,35 +407,54 @@ export default function CheckoutPage() {
         selectedColor: item.selectedColor.name,
       }));
 
-      const response = await fetch("/api/payment/create-preference", {
+      const payerData = {
+        name: payerForm.name,
+        email: payerForm.email,
+        cpf: payerForm.cpf,
+        phone: {
+          area_code: phoneNumbers.slice(0, 2),
+          number: phoneNumbers.slice(2),
+        },
+        address: {
+          street_name: payerForm.address.street,
+          street_number: payerForm.address.number,
+          complement: payerForm.address.complement,
+          neighborhood: payerForm.address.neighborhood,
+          city: payerForm.address.city,
+          state: payerForm.address.state,
+          zip_code: payerForm.address.zipCode.replace(/\D/g, ""),
+        },
+      };
+
+      const shippingData =
+        deliveryMethod === "pickup"
+          ? {
+              method: "Retirada na loja",
+              cost: 0,
+              deadline: "Retirar em ate 5 dias uteis",
+            }
+          : selectedShipping
+          ? {
+              method: selectedShipping.nome,
+              cost: selectedShipping.preco,
+              deadline: `${selectedShipping.prazo} dias uteis`,
+            }
+          : null;
+
+      // Escolher endpoint baseado no metodo de pagamento
+      const apiUrl = paymentMethodType === "pix"
+        ? "/api/payment/pix"
+        : "/api/payment/create-session";
+
+      const response = await fetch(apiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           items,
           cartItems,
-          payer: {
-            name: payerForm.name,
-            email: payerForm.email,
-            cpf: payerForm.cpf,
-            phone: {
-              area_code: phoneNumbers.slice(0, 2),
-              number: phoneNumbers.slice(2),
-            },
-            address: {
-              street_name: payerForm.address.street,
-              street_number: payerForm.address.number,
-              complement: payerForm.address.complement,
-              neighborhood: payerForm.address.neighborhood,
-              city: payerForm.address.city,
-              state: payerForm.address.state,
-              zip_code: payerForm.address.zipCode.replace(/\D/g, ""),
-            },
-          },
-          shipping: selectedShipping ? {
-            method: selectedShipping.nome,
-            cost: selectedShipping.preco,
-            deadline: `${selectedShipping.prazo} dias úteis`,
-          } : null,
+          paymentMethod: paymentMethodType,
+          payer: payerData,
+          shipping: shippingData,
         }),
       });
 
@@ -259,25 +464,54 @@ export default function CheckoutPage() {
         throw new Error(data.error);
       }
 
-      // Redirect to Mercado Pago
-      const checkoutUrl = data.sandbox_init_point || data.init_point;
-      if (checkoutUrl) {
-        window.location.href = checkoutUrl;
+      if (paymentMethodType === "pix") {
+        setOrderNumber(data.orderNumber);
+        setPixData(data.pixData);
       } else {
-        throw new Error("URL de pagamento não disponível");
+        setEmbeddedClientSecret(data.clientSecret);
+        setOrderNumber(data.orderNumber);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao processar pagamento");
+      setError(
+        err instanceof Error ? err.message : "Erro ao processar pagamento"
+      );
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handlePaymentSuccess = async (orderNum: string) => {
+    // Confirmar pagamento no banco (fallback para quando webhook nao funciona)
+    try {
+      await fetch("/api/payment/confirm", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderNumber: orderNum }),
+      });
+    } catch (err) {
+      console.error("Erro ao confirmar pagamento:", err);
+    }
+
+    clearCart();
+    router.push(`/checkout/success?order=${orderNum}`);
+  };
+
+  const handlePaymentError = (errorMsg: string) => {
+    setError(errorMsg);
+  };
+
   const isFormValid = () => {
-    return (
+    const basicValid =
       payerForm.name.length > 2 &&
       payerForm.email.includes("@") &&
-      payerForm.phone.replace(/\D/g, "").length >= 10 &&
+      payerForm.phone.replace(/\D/g, "").length >= 10;
+
+    if (deliveryMethod === "pickup") {
+      return basicValid;
+    }
+
+    return (
+      basicValid &&
       payerForm.address.street.length > 2 &&
       payerForm.address.number.length > 0 &&
       payerForm.address.city.length > 2 &&
@@ -287,7 +521,7 @@ export default function CheckoutPage() {
     );
   };
 
-  if (cart.length === 0) {
+  if (cart.length === 0 && !orderNumber) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[var(--background)] px-4">
         <div className="text-center">
@@ -304,7 +538,7 @@ export default function CheckoutPage() {
               d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
             />
           </svg>
-          <h1 className="text-2xl font-bold mb-2">Seu carrinho está vazio</h1>
+          <h1 className="text-2xl font-bold mb-2">Seu carrinho esta vazio</h1>
           <p className="text-[var(--muted)] mb-6">
             Adicione produtos para continuar com a compra
           </p>
@@ -326,16 +560,22 @@ export default function CheckoutPage() {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <Link href="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-[var(--foreground)] rounded-lg flex items-center justify-center">
-                <span className="text-[var(--background)] font-bold text-sm">LR</span>
+              <div className="flex flex-col items-center">
+                <span className="font-display text-xl tracking-wide">D&apos; flor</span>
+                <span className="font-body text-[8px] tracking-[0.3em] uppercase text-[var(--muted)] -mt-1">
+                  elegance
+                </span>
               </div>
-              <span className="font-bold text-xl hidden sm:block">Checkout</span>
+              <span className="text-[var(--muted)] hidden sm:block">/</span>
+              <span className="font-semibold hidden sm:block">
+                Checkout
+              </span>
             </Link>
             <Link
               href="/"
               className="text-sm text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
             >
-              ← Voltar à loja
+              ← Voltar a loja
             </Link>
           </div>
         </div>
@@ -346,11 +586,15 @@ export default function CheckoutPage() {
         <div className="flex items-center justify-center mb-8">
           <div className="flex items-center gap-4">
             <div
-              className={`flex items-center gap-2 ${step >= 1 ? "text-[var(--foreground)]" : "text-[var(--muted)]"}`}
+              className={`flex items-center gap-2 ${
+                step >= 1 ? "text-[var(--foreground)]" : "text-[var(--muted)]"
+              }`}
             >
               <span
                 className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                  step >= 1 ? "bg-[var(--foreground)] text-[var(--background)]" : "bg-[var(--secondary)]"
+                  step >= 1
+                    ? "bg-[var(--foreground)] text-[var(--background)]"
+                    : "bg-[var(--secondary)]"
                 }`}
               >
                 1
@@ -359,11 +603,15 @@ export default function CheckoutPage() {
             </div>
             <div className="w-12 h-px bg-[var(--border)]" />
             <div
-              className={`flex items-center gap-2 ${step >= 2 ? "text-[var(--foreground)]" : "text-[var(--muted)]"}`}
+              className={`flex items-center gap-2 ${
+                step >= 2 ? "text-[var(--foreground)]" : "text-[var(--muted)]"
+              }`}
             >
               <span
                 className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                  step >= 2 ? "bg-[var(--foreground)] text-[var(--background)]" : "bg-[var(--secondary)]"
+                  step >= 2
+                    ? "bg-[var(--foreground)] text-[var(--background)]"
+                    : "bg-[var(--secondary)]"
                 }`}
               >
                 2
@@ -372,11 +620,15 @@ export default function CheckoutPage() {
             </div>
             <div className="w-12 h-px bg-[var(--border)]" />
             <div
-              className={`flex items-center gap-2 ${step >= 3 ? "text-[var(--foreground)]" : "text-[var(--muted)]"}`}
+              className={`flex items-center gap-2 ${
+                step >= 3 ? "text-[var(--foreground)]" : "text-[var(--muted)]"
+              }`}
             >
               <span
                 className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                  step >= 3 ? "bg-[var(--foreground)] text-[var(--background)]" : "bg-[var(--secondary)]"
+                  step >= 3
+                    ? "bg-[var(--foreground)] text-[var(--background)]"
+                    : "bg-[var(--secondary)]"
                 }`}
               >
                 3
@@ -408,7 +660,8 @@ export default function CheckoutPage() {
                       <div className="flex-1">
                         <h3 className="font-medium">{item.product.name}</h3>
                         <p className="text-sm text-[var(--muted)] mt-1">
-                          Tamanho: {item.selectedSize} | Cor: {item.selectedColor.name}
+                          Tamanho: {item.selectedSize} | Cor:{" "}
+                          {item.selectedColor.name}
                         </p>
                         <p className="font-bold mt-2">
                           R$ {item.product.price.toFixed(2).replace(".", ",")}
@@ -416,7 +669,10 @@ export default function CheckoutPage() {
                         <div className="flex items-center gap-3 mt-2">
                           <button
                             onClick={() =>
-                              updateCartQuantity(item.product.id, Math.max(1, item.quantity - 1))
+                              updateCartQuantity(
+                                item.product.id,
+                                Math.max(1, item.quantity - 1)
+                              )
                             }
                             className="w-8 h-8 rounded border border-[var(--border)] flex items-center justify-center hover:bg-[var(--secondary)]"
                           >
@@ -425,7 +681,10 @@ export default function CheckoutPage() {
                           <span>{item.quantity}</span>
                           <button
                             onClick={() =>
-                              updateCartQuantity(item.product.id, item.quantity + 1)
+                              updateCartQuantity(
+                                item.product.id,
+                                item.quantity + 1
+                              )
                             }
                             className="w-8 h-8 rounded border border-[var(--border)] flex items-center justify-center hover:bg-[var(--secondary)]"
                           >
@@ -457,21 +716,29 @@ export default function CheckoutPage() {
                 <div className="space-y-4">
                   <div className="grid gap-4 md:grid-cols-2">
                     <div>
-                      <label className="block text-sm font-medium mb-2">Nome Completo *</label>
+                      <label className="block text-sm font-medium mb-2">
+                        Nome Completo *
+                      </label>
                       <input
                         type="text"
                         value={payerForm.name}
-                        onChange={(e) => handleInputChange("name", e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("name", e.target.value)
+                        }
                         className="w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--background)]"
                         placeholder="Seu nome completo"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-2">E-mail *</label>
+                      <label className="block text-sm font-medium mb-2">
+                        E-mail *
+                      </label>
                       <input
                         type="email"
                         value={payerForm.email}
-                        onChange={(e) => handleInputChange("email", e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("email", e.target.value)
+                        }
                         className="w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--background)]"
                         placeholder="seu@email.com"
                       />
@@ -480,22 +747,30 @@ export default function CheckoutPage() {
 
                   <div className="grid gap-4 md:grid-cols-2">
                     <div>
-                      <label className="block text-sm font-medium mb-2">Telefone *</label>
+                      <label className="block text-sm font-medium mb-2">
+                        Telefone *
+                      </label>
                       <input
                         type="text"
                         value={payerForm.phone}
-                        onChange={(e) => handleInputChange("phone", formatPhone(e.target.value))}
+                        onChange={(e) =>
+                          handleInputChange("phone", formatPhone(e.target.value))
+                        }
                         className="w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--background)]"
                         placeholder="(00) 00000-0000"
                         maxLength={15}
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-2">CPF</label>
+                      <label className="block text-sm font-medium mb-2">
+                        CPF
+                      </label>
                       <input
                         type="text"
                         value={payerForm.cpf}
-                        onChange={(e) => handleInputChange("cpf", formatCPF(e.target.value))}
+                        onChange={(e) =>
+                          handleInputChange("cpf", formatCPF(e.target.value))
+                        }
                         className="w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--background)]"
                         placeholder="000.000.000-00"
                         maxLength={14}
@@ -505,158 +780,371 @@ export default function CheckoutPage() {
 
                   <hr className="border-[var(--border)] my-6" />
 
-                  {/* CEP com cálculo de frete */}
-                  <div>
-                    <label className="block text-sm font-medium mb-2">CEP *</label>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={payerForm.address.zipCode}
-                        onChange={(e) => handleInputChange("address.zipCode", formatZipCode(e.target.value))}
-                        className="flex-1 px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--background)]"
-                        placeholder="00000-000"
-                        maxLength={9}
-                      />
-                      <a
-                        href="https://buscacepinter.correios.com.br/app/endereco/index.php"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-4 py-3 border border-[var(--border)] rounded-xl text-sm hover:bg-[var(--secondary)] transition-colors whitespace-nowrap"
+                  {/* Metodo de entrega */}
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium mb-3">
+                      Como deseja receber?
+                    </label>
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <label
+                        className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all ${
+                          deliveryMethod === "shipping"
+                            ? "border-[var(--foreground)] bg-[var(--secondary)]"
+                            : "border-[var(--border)] hover:border-[var(--muted)]"
+                        }`}
                       >
-                        Não sei meu CEP
-                      </a>
+                        <input
+                          type="radio"
+                          name="deliveryMethod"
+                          checked={deliveryMethod === "shipping"}
+                          onChange={() => setDeliveryMethod("shipping")}
+                          className="w-4 h-4"
+                        />
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={1.5}
+                                d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"
+                              />
+                            </svg>
+                            <span className="font-medium">Receber em casa</span>
+                          </div>
+                          <p className="text-xs text-[var(--muted)] mt-1">
+                            Entrega via Correios
+                          </p>
+                        </div>
+                      </label>
+
+                      <label
+                        className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all ${
+                          deliveryMethod === "pickup"
+                            ? "border-[var(--foreground)] bg-[var(--secondary)]"
+                            : "border-[var(--border)] hover:border-[var(--muted)]"
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="deliveryMethod"
+                          checked={deliveryMethod === "pickup"}
+                          onChange={() => setDeliveryMethod("pickup")}
+                          className="w-4 h-4"
+                        />
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={1.5}
+                                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                              />
+                            </svg>
+                            <span className="font-medium">Retirar na loja</span>
+                          </div>
+                          <p className="text-xs text-[var(--muted)] mt-1">
+                            Gratis - Retire em ate 5 dias
+                          </p>
+                        </div>
+                      </label>
                     </div>
                   </div>
 
-                  {/* Opções de Frete */}
-                  {payerForm.address.zipCode.replace(/\D/g, "").length === 8 && (
-                    <div className="mt-4 p-4 bg-[var(--background)] rounded-xl border border-[var(--border)]">
-                      <h3 className="font-medium mb-3 flex items-center gap-2">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                  {/* Endereco da loja para retirada */}
+                  {deliveryMethod === "pickup" && (
+                    <div className="mb-6 p-4 bg-teal-500/10 border border-teal-500/30 rounded-xl">
+                      <div className="flex items-start gap-3">
+                        <svg
+                          className="w-5 h-5 text-teal-600 dark:text-teal-400 mt-0.5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                          />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                          />
                         </svg>
-                        Opções de Entrega
-                      </h3>
-
-                      {isCalculatingShipping ? (
-                        <div className="flex items-center gap-2 text-[var(--muted)]">
-                          <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                          </svg>
-                          Calculando frete...
+                        <div>
+                          <p className="font-medium text-teal-700 dark:text-teal-300">
+                            Endereco para retirada
+                          </p>
+                          <p className="text-sm text-teal-600 dark:text-teal-400 mt-1">
+                            Rua Exemplo, 123 - Centro
+                            <br />
+                            Sao Paulo - SP, 01310-100
+                            <br />
+                            <span className="text-xs">
+                              Horario: Seg-Sex 9h as 18h
+                            </span>
+                          </p>
                         </div>
-                      ) : shippingError ? (
-                        <p className="text-red-500 text-sm">{shippingError}</p>
-                      ) : shippingOptions.length > 0 ? (
-                        <div className="space-y-2">
-                          {shippingOptions.map((option) => (
-                            <label
-                              key={option.codigo}
-                              className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all ${
-                                selectedShipping?.codigo === option.codigo
-                                  ? "border-[var(--foreground)] bg-[var(--secondary)]"
-                                  : "border-[var(--border)] hover:border-[var(--muted)]"
-                              }`}
-                            >
-                              <div className="flex items-center gap-3">
-                                <input
-                                  type="radio"
-                                  name="shipping"
-                                  checked={selectedShipping?.codigo === option.codigo}
-                                  onChange={() => setSelectedShipping(option)}
-                                  className="w-4 h-4"
-                                />
-                                <div>
-                                  <p className="font-medium">{option.nome}</p>
-                                  <p className="text-sm text-[var(--muted)]">
-                                    Entrega em até {option.prazo} dias úteis
-                                  </p>
-                                </div>
-                              </div>
-                              <span className="font-bold">
-                                R$ {option.preco.toFixed(2).replace(".", ",")}
-                              </span>
-                            </label>
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-[var(--muted)] text-sm">
-                          Digite o CEP para calcular o frete
-                        </p>
-                      )}
+                      </div>
                     </div>
                   )}
 
-                  <div className="grid gap-4 md:grid-cols-3">
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-medium mb-2">Rua *</label>
-                      <input
-                        type="text"
-                        value={payerForm.address.street}
-                        onChange={(e) => handleInputChange("address.street", e.target.value)}
-                        className="w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--background)]"
-                        placeholder="Nome da rua"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-2">Número *</label>
-                      <input
-                        type="text"
-                        value={payerForm.address.number}
-                        onChange={(e) => handleInputChange("address.number", e.target.value)}
-                        className="w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--background)]"
-                        placeholder="123"
-                      />
-                    </div>
-                  </div>
+                  {/* CEP com calculo de frete - so mostra se for entrega */}
+                  {deliveryMethod === "shipping" && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium mb-2">
+                          CEP *
+                        </label>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={payerForm.address.zipCode}
+                            onChange={(e) =>
+                              handleInputChange(
+                                "address.zipCode",
+                                formatZipCode(e.target.value)
+                              )
+                            }
+                            className="flex-1 px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--background)]"
+                            placeholder="00000-000"
+                            maxLength={9}
+                          />
+                          <a
+                            href="https://buscacepinter.correios.com.br/app/endereco/index.php"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-4 py-3 border border-[var(--border)] rounded-xl text-sm hover:bg-[var(--secondary)] transition-colors whitespace-nowrap"
+                          >
+                            Nao sei meu CEP
+                          </a>
+                        </div>
+                      </div>
 
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div>
-                      <label className="block text-sm font-medium mb-2">Complemento</label>
-                      <input
-                        type="text"
-                        value={payerForm.address.complement}
-                        onChange={(e) => handleInputChange("address.complement", e.target.value)}
-                        className="w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--background)]"
-                        placeholder="Apto, bloco, etc."
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-2">Bairro</label>
-                      <input
-                        type="text"
-                        value={payerForm.address.neighborhood}
-                        onChange={(e) => handleInputChange("address.neighborhood", e.target.value)}
-                        className="w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--background)]"
-                        placeholder="Bairro"
-                      />
-                    </div>
-                  </div>
+                      {/* Opcoes de Frete */}
+                      {payerForm.address.zipCode.replace(/\D/g, "").length ===
+                        8 && (
+                        <div className="mt-4 p-4 bg-[var(--background)] rounded-xl border border-[var(--border)]">
+                          <h3 className="font-medium mb-3 flex items-center gap-2">
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={1.5}
+                                d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"
+                              />
+                            </svg>
+                            Opcoes de Entrega
+                          </h3>
 
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div>
-                      <label className="block text-sm font-medium mb-2">Cidade *</label>
-                      <input
-                        type="text"
-                        value={payerForm.address.city}
-                        onChange={(e) => handleInputChange("address.city", e.target.value)}
-                        className="w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--background)]"
-                        placeholder="Cidade"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium mb-2">Estado *</label>
-                      <input
-                        type="text"
-                        value={payerForm.address.state}
-                        onChange={(e) => handleInputChange("address.state", e.target.value.toUpperCase())}
-                        className="w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--background)]"
-                        placeholder="SP"
-                        maxLength={2}
-                      />
-                    </div>
-                  </div>
+                          {isCalculatingShipping ? (
+                            <div className="flex items-center gap-2 text-[var(--muted)]">
+                              <svg
+                                className="w-5 h-5 animate-spin"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                              >
+                                <circle
+                                  className="opacity-25"
+                                  cx="12"
+                                  cy="12"
+                                  r="10"
+                                  stroke="currentColor"
+                                  strokeWidth="4"
+                                />
+                                <path
+                                  className="opacity-75"
+                                  fill="currentColor"
+                                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                                />
+                              </svg>
+                              Calculando frete...
+                            </div>
+                          ) : shippingError ? (
+                            <p className="text-red-500 text-sm">
+                              {shippingError}
+                            </p>
+                          ) : shippingOptions.length > 0 ? (
+                            <div className="space-y-2">
+                              {shippingOptions.map((option) => (
+                                <label
+                                  key={option.codigo}
+                                  className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all ${
+                                    selectedShipping?.codigo === option.codigo
+                                      ? "border-[var(--foreground)] bg-[var(--secondary)]"
+                                      : "border-[var(--border)] hover:border-[var(--muted)]"
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <input
+                                      type="radio"
+                                      name="shipping"
+                                      checked={
+                                        selectedShipping?.codigo ===
+                                        option.codigo
+                                      }
+                                      onChange={() =>
+                                        setSelectedShipping(option)
+                                      }
+                                      className="w-4 h-4"
+                                    />
+                                    <div>
+                                      <p className="font-medium">
+                                        {option.nome}
+                                      </p>
+                                      <p className="text-sm text-[var(--muted)]">
+                                        Entrega em ate {option.prazo} dias uteis
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <span className="font-bold">
+                                    R${" "}
+                                    {option.preco.toFixed(2).replace(".", ",")}
+                                  </span>
+                                </label>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-[var(--muted)] text-sm">
+                              Digite o CEP para calcular o frete
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {deliveryMethod === "shipping" && (
+                    <>
+                      <div className="grid gap-4 md:grid-cols-3">
+                        <div className="md:col-span-2">
+                          <label className="block text-sm font-medium mb-2">
+                            Rua *
+                          </label>
+                          <input
+                            type="text"
+                            value={payerForm.address.street}
+                            onChange={(e) =>
+                              handleInputChange(
+                                "address.street",
+                                e.target.value
+                              )
+                            }
+                            className="w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--background)]"
+                            placeholder="Nome da rua"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-2">
+                            Numero *
+                          </label>
+                          <input
+                            type="text"
+                            value={payerForm.address.number}
+                            onChange={(e) =>
+                              handleInputChange(
+                                "address.number",
+                                e.target.value
+                              )
+                            }
+                            className="w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--background)]"
+                            placeholder="123"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div>
+                          <label className="block text-sm font-medium mb-2">
+                            Complemento
+                          </label>
+                          <input
+                            type="text"
+                            value={payerForm.address.complement}
+                            onChange={(e) =>
+                              handleInputChange(
+                                "address.complement",
+                                e.target.value
+                              )
+                            }
+                            className="w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--background)]"
+                            placeholder="Apto, bloco, etc."
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-2">
+                            Bairro
+                          </label>
+                          <input
+                            type="text"
+                            value={payerForm.address.neighborhood}
+                            onChange={(e) =>
+                              handleInputChange(
+                                "address.neighborhood",
+                                e.target.value
+                              )
+                            }
+                            className="w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--background)]"
+                            placeholder="Bairro"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div>
+                          <label className="block text-sm font-medium mb-2">
+                            Cidade *
+                          </label>
+                          <input
+                            type="text"
+                            value={payerForm.address.city}
+                            onChange={(e) =>
+                              handleInputChange("address.city", e.target.value)
+                            }
+                            className="w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--background)]"
+                            placeholder="Cidade"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium mb-2">
+                            Estado *
+                          </label>
+                          <input
+                            type="text"
+                            value={payerForm.address.state}
+                            onChange={(e) =>
+                              handleInputChange(
+                                "address.state",
+                                e.target.value.toUpperCase()
+                              )
+                            }
+                            className="w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--background)]"
+                            placeholder="SP"
+                            maxLength={2}
+                          />
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 <div className="flex gap-3 mt-6">
@@ -681,20 +1169,53 @@ export default function CheckoutPage() {
               <div className="bg-[var(--card-bg)] border border-[var(--border)] rounded-2xl p-6">
                 <h2 className="text-xl font-bold mb-6">Pagamento</h2>
 
+                {/* Resumo dos dados */}
                 <div className="mb-6 p-4 bg-[var(--background)] rounded-xl">
-                  <h3 className="font-medium mb-2">Dados de Entrega</h3>
+                  <h3 className="font-medium mb-2">
+                    {deliveryMethod === "pickup"
+                      ? "Dados do Cliente"
+                      : "Dados de Entrega"}
+                  </h3>
                   <p className="text-sm text-[var(--muted)]">
-                    {payerForm.name}<br />
-                    {payerForm.email}<br />
-                    {payerForm.address.street}, {payerForm.address.number}
-                    {payerForm.address.complement && ` - ${payerForm.address.complement}`}<br />
-                    {payerForm.address.neighborhood && `${payerForm.address.neighborhood}, `}
-                    {payerForm.address.city} - {payerForm.address.state}, {payerForm.address.zipCode}
+                    {payerForm.name}
+                    <br />
+                    {payerForm.email}
+                    <br />
+                    {payerForm.phone}
                   </p>
-                  {selectedShipping && (
-                    <p className="text-sm text-[var(--foreground)] mt-2">
-                      <strong>Entrega:</strong> {selectedShipping.nome} - até {selectedShipping.prazo} dias úteis
+                  {deliveryMethod === "shipping" && (
+                    <p className="text-sm text-[var(--muted)] mt-2">
+                      {payerForm.address.street}, {payerForm.address.number}
+                      {payerForm.address.complement &&
+                        ` - ${payerForm.address.complement}`}
+                      <br />
+                      {payerForm.address.neighborhood &&
+                        `${payerForm.address.neighborhood}, `}
+                      {payerForm.address.city} - {payerForm.address.state},{" "}
+                      {payerForm.address.zipCode}
                     </p>
+                  )}
+                  {deliveryMethod === "pickup" ? (
+                    <div className="mt-3 p-3 bg-teal-500/10 border border-teal-500/30 rounded-lg">
+                      <p className="text-sm text-teal-600 dark:text-teal-400">
+                        <strong>Retirada na loja</strong>
+                        <br />
+                        Rua Exemplo, 123 - Centro
+                        <br />
+                        Sao Paulo - SP
+                        <br />
+                        <span className="text-xs">
+                          Retire em ate 5 dias uteis
+                        </span>
+                      </p>
+                    </div>
+                  ) : (
+                    selectedShipping && (
+                      <p className="text-sm text-[var(--foreground)] mt-2">
+                        <strong>Entrega:</strong> {selectedShipping.nome} - ate{" "}
+                        {selectedShipping.prazo} dias uteis
+                      </p>
+                    )
                   )}
                   <button
                     onClick={() => setStep(2)}
@@ -704,20 +1225,144 @@ export default function CheckoutPage() {
                   </button>
                 </div>
 
-                <div className="p-6 bg-[var(--secondary)] rounded-xl text-center">
-                  <img
-                    src="https://logospng.org/download/mercado-pago/logo-mercado-pago-icone-1024.png"
-                    alt="Mercado Pago"
-                    className="h-12 mx-auto mb-4"
+                {/* Selecao do metodo de pagamento */}
+                {!pixData && !embeddedClientSecret && (
+                  <>
+                    <div className="mb-6">
+                      <h3 className="font-medium mb-3">
+                        Escolha a forma de pagamento
+                      </h3>
+                      <div className="grid gap-3">
+                        {/* Checkout Rapido - Recomendado */}
+                        <label
+                          className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all ${
+                            paymentMethodType === "embedded"
+                              ? "border-[var(--foreground)] bg-[var(--secondary)]"
+                              : "border-[var(--border)] hover:border-[var(--muted)]"
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name="paymentMethod"
+                            checked={paymentMethodType === "embedded"}
+                            onChange={() => setPaymentMethodType("embedded")}
+                            className="w-4 h-4"
+                          />
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <svg
+                                className="w-5 h-5"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={1.5}
+                                  d="M13 10V3L4 14h7v7l9-11h-7z"
+                                />
+                              </svg>
+                              <span className="font-medium">
+                                Checkout Rapido
+                              </span>
+                              <span className="text-xs bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/30">
+                                Recomendado
+                              </span>
+                            </div>
+                            <p className="text-xs text-[var(--muted)] mt-1">
+                              Pagamento rapido e seguro
+                            </p>
+                          </div>
+                        </label>
+
+                        {/* PIX */}
+                        <label
+                          className={`flex items-center gap-3 p-4 rounded-xl border cursor-pointer transition-all ${
+                            paymentMethodType === "pix"
+                              ? "border-[var(--foreground)] bg-[var(--secondary)]"
+                              : "border-[var(--border)] hover:border-[var(--muted)]"
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name="paymentMethod"
+                            checked={paymentMethodType === "pix"}
+                            onChange={() => setPaymentMethodType("pix")}
+                            className="w-4 h-4"
+                          />
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <svg
+                                className="w-5 h-5"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                              >
+                                <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                                <path d="M2 17l10 5 10-5" />
+                                <path d="M2 12l10 5 10-5" />
+                              </svg>
+                              <span className="font-medium">PIX</span>
+                              <span className="text-xs bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/30">
+                                Instantaneo
+                              </span>
+                            </div>
+                            <p className="text-xs text-[var(--muted)] mt-1">
+                              Aprovacao em segundos
+                            </p>
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div className="p-4 bg-[var(--secondary)] rounded-xl mb-6">
+                      <div className="flex items-center gap-2 mb-2">
+                        <svg
+                          className="w-5 h-5 text-emerald-600 dark:text-emerald-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                          />
+                        </svg>
+                        <span className="font-medium">Pagamento Seguro</span>
+                      </div>
+                      <p className="text-sm text-[var(--muted)]">
+                        Seus dados estao protegidos com criptografia SSL.
+                        Processado por Stripe.
+                      </p>
+                    </div>
+                  </>
+                )}
+
+                {/* Embedded Checkout */}
+                {embeddedClientSecret && paymentMethodType === "embedded" && (
+                  <div className="rounded-xl overflow-hidden border border-[var(--border)]">
+                    <EmbeddedCheckoutProvider
+                      stripe={stripePromise}
+                      options={{ clientSecret: embeddedClientSecret }}
+                    >
+                      <EmbeddedCheckout />
+                    </EmbeddedCheckoutProvider>
+                  </div>
+                )}
+
+                {/* Pagamento PIX */}
+                {paymentMethodType === "pix" && pixData && (
+                  <PixPayment
+                    pixData={pixData}
+                    orderNumber={orderNumber}
+                    total={orderTotal}
+                    onPaymentConfirmed={handlePaymentSuccess}
                   />
-                  <p className="text-sm text-[var(--muted)] mb-4">
-                    Ao clicar em &quot;Pagar&quot;, você será redirecionado para o Mercado Pago
-                    para finalizar o pagamento de forma segura.
-                  </p>
-                  <p className="text-xs text-[var(--muted)]">
-                    Aceitamos cartão de crédito, débito, PIX e boleto bancário.
-                  </p>
-                </div>
+                )}
 
                 {error && (
                   <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-600 dark:text-red-400 text-sm">
@@ -725,21 +1370,27 @@ export default function CheckoutPage() {
                   </div>
                 )}
 
-                <div className="flex gap-3 mt-6">
-                  <button
-                    onClick={() => setStep(2)}
-                    className="flex-1 py-3 border border-[var(--border)] rounded-xl font-semibold hover:bg-[var(--secondary)] transition-colors"
-                  >
-                    Voltar
-                  </button>
-                  <button
-                    onClick={handleCheckout}
-                    disabled={isLoading}
-                    className="flex-1 py-3 bg-[var(--foreground)] text-[var(--background)] rounded-xl font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isLoading ? "Processando..." : `Pagar R$ ${orderTotal.toFixed(2).replace(".", ",")}`}
-                  </button>
-                </div>
+                {!pixData && !embeddedClientSecret && (
+                  <div className="flex gap-3 mt-6">
+                    <button
+                      onClick={() => setStep(2)}
+                      className="flex-1 py-3 border border-[var(--border)] rounded-xl font-semibold hover:bg-[var(--secondary)] transition-colors"
+                    >
+                      Voltar
+                    </button>
+                    <button
+                      onClick={createPaymentIntent}
+                      disabled={isLoading}
+                      className="flex-1 py-3 bg-[var(--foreground)] text-[var(--background)] rounded-xl font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isLoading
+                        ? "Processando..."
+                        : paymentMethodType === "pix"
+                        ? "Gerar QR Code PIX"
+                        : "Ir para Pagamento"}
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -763,11 +1414,18 @@ export default function CheckoutPage() {
                       />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{item.product.name}</p>
-                      <p className="text-xs text-[var(--muted)]">Qtd: {item.quantity}</p>
+                      <p className="text-sm font-medium truncate">
+                        {item.product.name}
+                      </p>
+                      <p className="text-xs text-[var(--muted)]">
+                        Qtd: {item.quantity}
+                      </p>
                     </div>
                     <p className="text-sm font-medium">
-                      R$ {(item.product.price * item.quantity).toFixed(2).replace(".", ",")}
+                      R${" "}
+                      {(item.product.price * item.quantity)
+                        .toFixed(2)
+                        .replace(".", ",")}
                     </p>
                   </div>
                 ))}
@@ -782,10 +1440,18 @@ export default function CheckoutPage() {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-[var(--muted)]">Frete</span>
-                  {selectedShipping ? (
-                    <span>R$ {selectedShipping.preco.toFixed(2).replace(".", ",")}</span>
+                  {deliveryMethod === "pickup" ? (
+                    <span className="text-teal-600 dark:text-teal-400 font-medium">
+                      Gratis
+                    </span>
+                  ) : selectedShipping ? (
+                    <span>
+                      R$ {selectedShipping.preco.toFixed(2).replace(".", ",")}
+                    </span>
                   ) : (
-                    <span className="text-[var(--muted)]">Calcular no próximo passo</span>
+                    <span className="text-[var(--muted)]">
+                      Calcular no proximo passo
+                    </span>
                   )}
                 </div>
               </div>
@@ -799,14 +1465,21 @@ export default function CheckoutPage() {
                 </span>
               </div>
 
-              {selectedShipping && (
-                <p className="text-xs text-[var(--muted)] mt-2">
-                  Entrega via {selectedShipping.nome} em até {selectedShipping.prazo} dias úteis
+              {deliveryMethod === "pickup" ? (
+                <p className="text-xs text-teal-600 dark:text-teal-400 mt-2">
+                  Retirada na loja - Retire em ate 5 dias uteis
                 </p>
+              ) : (
+                selectedShipping && (
+                  <p className="text-xs text-[var(--muted)] mt-2">
+                    Entrega via {selectedShipping.nome} em ate{" "}
+                    {selectedShipping.prazo} dias uteis
+                  </p>
+                )
               )}
 
               <p className="text-xs text-[var(--muted)] mt-4 text-center">
-                Parcelamento em até 12x no cartão de crédito
+                Parcelamento em ate 12x no cartao de credito
               </p>
             </div>
           </div>
