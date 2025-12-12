@@ -11,6 +11,7 @@ import {
   EmbeddedCheckoutProvider,
   EmbeddedCheckout,
 } from "@stripe/react-stripe-js";
+// PIX usa PagSeguro/PagBank (inline QR Code)
 
 const stripePromise = loadStripe(
   process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
@@ -41,7 +42,7 @@ interface ShippingOption {
 
 interface PixData {
   qrCode: string;
-  qrCodeBase64: string;
+  qrCodeImage: string;
   expiresAt: number;
 }
 
@@ -73,12 +74,16 @@ function PixPayment({
     }
   };
 
-  // Polling para verificar pagamento a cada 5 segundos
+  // Polling para verificar pagamento a cada 5 segundos (PagSeguro)
   useEffect(() => {
     const checkPaymentStatus = async () => {
       try {
         setChecking(true);
-        const response = await fetch(`/api/payment/pix?order_number=${orderNumber}`);
+        const response = await fetch("/api/webhooks/pagseguro", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orderNumber }),
+        });
         const data = await response.json();
 
         if (data.status === "paid") {
@@ -123,11 +128,7 @@ function PixPayment({
       <div className="flex flex-col items-center space-y-4">
         <div className="bg-white p-4 rounded-xl">
           <img
-            src={pixData.qrCodeBase64.startsWith("http")
-              ? pixData.qrCodeBase64
-              : pixData.qrCodeBase64.startsWith("data:")
-              ? pixData.qrCodeBase64
-              : `data:image/png;base64,${pixData.qrCodeBase64}`}
+            src={pixData.qrCodeImage}
             alt="QR Code PIX"
             className="w-48 h-48"
           />
@@ -212,6 +213,7 @@ export default function CheckoutPage() {
   const [embeddedClientSecret, setEmbeddedClientSecret] = useState("");
   const [orderNumber, setOrderNumber] = useState("");
   const [pixData, setPixData] = useState<PixData | null>(null);
+  const [pixTotal, setPixTotal] = useState(0);
   const [payerForm, setPayerForm] = useState<PayerForm>({
     name: "",
     email: "",
@@ -442,8 +444,10 @@ export default function CheckoutPage() {
           : null;
 
       // Escolher endpoint baseado no metodo de pagamento
+      // PIX usa PagSeguro/PagBank (QR Code inline)
+      // Embedded usa Stripe Checkout
       const apiUrl = paymentMethodType === "pix"
-        ? "/api/payment/pix"
+        ? "/api/payment/pagseguro"
         : "/api/payment/create-session";
 
       const response = await fetch(apiUrl, {
@@ -465,8 +469,14 @@ export default function CheckoutPage() {
       }
 
       if (paymentMethodType === "pix") {
-        setOrderNumber(data.orderNumber);
-        setPixData(data.pixData);
+        // PagSeguro Checkout - redirecionar para pagina do PagSeguro (apenas PIX)
+        if (data.checkoutUrl) {
+          setOrderNumber(data.orderNumber);
+          // Redirecionar para o checkout do PagSeguro
+          window.location.href = data.checkoutUrl;
+        } else {
+          throw new Error("URL de checkout nao retornada");
+        }
       } else {
         setEmbeddedClientSecret(data.clientSecret);
         setOrderNumber(data.orderNumber);
@@ -554,7 +564,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--background)]">
+    <div className="min-h-screen bg-[var(--background)] overflow-x-hidden">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-[var(--background)]/80 backdrop-blur-md border-b border-[var(--border)]">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -910,7 +920,7 @@ export default function CheckoutPage() {
                         <label className="block text-sm font-medium mb-2">
                           CEP *
                         </label>
-                        <div className="flex gap-2">
+                        <div className="flex flex-col sm:flex-row gap-2">
                           <input
                             type="text"
                             value={payerForm.address.zipCode}
@@ -928,7 +938,7 @@ export default function CheckoutPage() {
                             href="https://buscacepinter.correios.com.br/app/endereco/index.php"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="px-4 py-3 border border-[var(--border)] rounded-xl text-sm hover:bg-[var(--secondary)] transition-colors whitespace-nowrap"
+                            className="px-4 py-3 border border-[var(--border)] rounded-xl text-sm hover:bg-[var(--secondary)] transition-colors whitespace-nowrap text-center"
                           >
                             Nao sei meu CEP
                           </a>
@@ -1305,12 +1315,12 @@ export default function CheckoutPage() {
                                 <path d="M2 12l10 5 10-5" />
                               </svg>
                               <span className="font-medium">PIX</span>
-                              <span className="text-xs bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 px-2 py-0.5 rounded-full border border-emerald-500/30">
-                                Instantaneo
+                              <span className="text-xs bg-teal-500/20 text-teal-700 dark:text-teal-400 px-2 py-0.5 rounded-full border border-teal-500/30">
+                                PagSeguro
                               </span>
                             </div>
                             <p className="text-xs text-[var(--muted)] mt-1">
-                              Aprovacao em segundos
+                              Pagamento instantaneo via QR Code
                             </p>
                           </div>
                         </label>
@@ -1354,12 +1364,12 @@ export default function CheckoutPage() {
                   </div>
                 )}
 
-                {/* Pagamento PIX */}
-                {paymentMethodType === "pix" && pixData && (
+                {/* PIX - QR Code PagSeguro */}
+                {pixData && paymentMethodType === "pix" && (
                   <PixPayment
                     pixData={pixData}
                     orderNumber={orderNumber}
-                    total={orderTotal}
+                    total={pixTotal}
                     onPaymentConfirmed={handlePaymentSuccess}
                   />
                 )}
@@ -1386,7 +1396,7 @@ export default function CheckoutPage() {
                       {isLoading
                         ? "Processando..."
                         : paymentMethodType === "pix"
-                        ? "Gerar QR Code PIX"
+                        ? "Pagar com PIX"
                         : "Ir para Pagamento"}
                     </button>
                   </div>

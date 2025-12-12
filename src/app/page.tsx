@@ -141,8 +141,8 @@ export default function HomePage() {
       {/* Header */}
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-          isScrolled
-            ? "bg-[var(--background)]/95 backdrop-blur-md shadow-sm py-3"
+          isScrolled || isMobileMenuOpen
+            ? "bg-[var(--background)] backdrop-blur-md shadow-sm py-3"
             : "bg-transparent py-6"
         }`}
       >
@@ -174,9 +174,9 @@ export default function HomePage() {
             </nav>
 
             {/* Icons */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
               <button
-                className="p-2 hover:text-[var(--primary)] transition-colors duration-300"
+                className="p-2 rounded-lg bg-[var(--background)]/80 backdrop-blur-sm shadow-sm hover:text-[var(--primary)] transition-colors duration-300"
                 aria-label="Buscar"
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -185,7 +185,7 @@ export default function HomePage() {
                 </svg>
               </button>
               <button
-                className="p-2 hover:text-[var(--primary)] transition-colors duration-300 hidden md:block"
+                className="p-2 rounded-lg bg-[var(--background)]/80 backdrop-blur-sm shadow-sm hover:text-[var(--primary)] transition-colors duration-300 hidden md:flex"
                 aria-label="Favoritos"
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -194,7 +194,7 @@ export default function HomePage() {
               </button>
               <Link
                 href="/loja"
-                className="p-2 hover:text-[var(--primary)] transition-colors duration-300"
+                className="p-2 rounded-lg bg-[var(--background)]/80 backdrop-blur-sm shadow-sm hover:text-[var(--primary)] transition-colors duration-300"
                 aria-label="Sacola"
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -206,7 +206,7 @@ export default function HomePage() {
 
               {/* Mobile Menu Button */}
               <button
-                className="lg:hidden p-2"
+                className="lg:hidden p-2 rounded-lg bg-[var(--background)]/80 backdrop-blur-sm shadow-sm"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 aria-label="Menu"
               >

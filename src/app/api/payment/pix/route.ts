@@ -171,40 +171,71 @@ export async function POST(request: NextRequest) {
     const cleanCPF = payer.cpf ? payer.cpf.replace(/\D/g, "") : "";
     const hasValidCPF = cleanCPF && isValidCPF(cleanCPF);
 
-    // Criar pagamento PIX no Mercado Pago
-    const mpPayment = await payment.create({
-      body: {
-        transaction_amount: total,
-        description: description,
-        payment_method_id: "pix",
-        payer: {
-          email: payer.email,
-          first_name: payer.name?.split(" ")[0] || "Cliente",
-          last_name: payer.name?.split(" ").slice(1).join(" ") || "",
-          ...(hasValidCPF && {
-            identification: {
-              type: "CPF",
-              number: cleanCPF,
-            },
-          }),
-        },
-        external_reference: orderNumber,
-        date_of_expiration: expirationDate.toISOString(),
-        notification_url: `${process.env.NEXT_PUBLIC_BASE_URL || "https://localhost:3000"}/api/webhooks/mercadopago`,
+    // Preparar body do pagamento
+    const paymentBody = {
+      transaction_amount: total,
+      description: description,
+      payment_method_id: "pix",
+      payer: {
+        email: payer.email,
+        first_name: payer.name?.split(" ")[0] || "Cliente",
+        last_name: payer.name?.split(" ").slice(1).join(" ") || "",
+        ...(hasValidCPF && {
+          identification: {
+            type: "CPF",
+            number: cleanCPF,
+          },
+        }),
       },
-      requestOptions: {
-        idempotencyKey: crypto.randomUUID(),
-      },
-    });
+      external_reference: orderNumber,
+      date_of_expiration: expirationDate.toISOString(),
+    };
 
-    if (!mpPayment || !mpPayment.id) {
-      console.error("Erro ao criar pagamento Mercado Pago:", mpPayment);
+    // Log para debug
+    console.log("Criando pagamento PIX com:", JSON.stringify(paymentBody, null, 2));
+    console.log("Access Token (primeiros 20 chars):", process.env.MERCADOPAGO_ACCESS_TOKEN?.substring(0, 20) + "...");
+
+    // Criar pagamento PIX no Mercado Pago
+    let mpPayment;
+    try {
+      mpPayment = await payment.create({
+        body: paymentBody,
+        requestOptions: {
+          idempotencyKey: crypto.randomUUID(),
+        },
+      });
+    } catch (mpError: unknown) {
+      console.error("Erro detalhado do Mercado Pago:", mpError);
+
+      // Deletar pedido criado
       await supabase.from("orders").delete().eq("id", order.id);
+
+      // Extrair mensagem de erro
+      const errorMessage = mpError instanceof Error
+        ? mpError.message
+        : typeof mpError === 'object' && mpError !== null
+          ? JSON.stringify(mpError)
+          : "Erro desconhecido";
+
       return NextResponse.json(
-        { error: "Erro ao gerar PIX" },
+        {
+          error: "Erro ao gerar PIX. Verifique as credenciais do Mercado Pago.",
+          details: errorMessage
+        },
         { status: 500 }
       );
     }
+
+    if (!mpPayment || !mpPayment.id) {
+      console.error("Pagamento criado mas sem ID:", mpPayment);
+      await supabase.from("orders").delete().eq("id", order.id);
+      return NextResponse.json(
+        { error: "Erro ao gerar PIX - resposta invalida" },
+        { status: 500 }
+      );
+    }
+
+    console.log("Pagamento PIX criado com sucesso:", mpPayment.id);
 
     // Extrair dados do PIX
     const transactionData = mpPayment.point_of_interaction?.transaction_data;

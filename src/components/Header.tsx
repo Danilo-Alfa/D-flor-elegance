@@ -45,8 +45,8 @@ export function Header() {
     <>
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-          isScrolled
-            ? "bg-[var(--background)]/95 backdrop-blur-md shadow-sm py-3"
+          isScrolled || isMobileMenuOpen
+            ? "bg-[var(--background)] backdrop-blur-md shadow-sm py-3"
             : "bg-transparent py-4"
         }`}
       >
@@ -84,12 +84,12 @@ export function Header() {
             </nav>
 
             {/* Right Section */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
               {/* Search */}
               <div className="relative">
                 <button
                   onClick={() => setIsSearchOpen(!isSearchOpen)}
-                  className="p-2 hover:text-[var(--primary)] transition-colors duration-300"
+                  className="p-2 rounded-lg bg-[var(--background)]/80 backdrop-blur-sm shadow-sm hover:text-[var(--primary)] transition-colors duration-300"
                   aria-label="Buscar"
                 >
                   <svg
@@ -174,7 +174,7 @@ export function Header() {
               {/* Cart */}
               <button
                 onClick={() => setIsCartOpen(true)}
-                className="relative p-2 hover:text-[var(--primary)] transition-colors duration-300"
+                className="relative p-2 rounded-lg bg-[var(--background)]/80 backdrop-blur-sm shadow-sm hover:text-[var(--primary)] transition-colors duration-300"
                 aria-label="Sacola"
               >
                 <svg
@@ -202,7 +202,7 @@ export function Header() {
               {/* Mobile Menu Button */}
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="lg:hidden p-2"
+                className="lg:hidden p-2 rounded-lg bg-[var(--background)]/80 backdrop-blur-sm shadow-sm"
                 aria-label="Menu"
               >
                 {isMobileMenuOpen ? (
