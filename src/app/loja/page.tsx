@@ -35,10 +35,11 @@ export default function LojaPage() {
     // Filtrar por busca
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim();
-      filtered = filtered.filter((p) =>
-        p.name.toLowerCase().includes(query) ||
-        p.description.toLowerCase().includes(query) ||
-        p.category.toLowerCase().includes(query)
+      filtered = filtered.filter(
+        (p) =>
+          p.name.toLowerCase().includes(query) ||
+          p.description.toLowerCase().includes(query) ||
+          p.category.toLowerCase().includes(query),
       );
     }
 
@@ -61,29 +62,30 @@ export default function LojaPage() {
 
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="relative bg-[var(--secondary)] overflow-hidden">
+        <section className="relative bg-secondary overflow-hidden">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               {/* Text Content */}
               <div>
-                <h1 className="text-4xl lg:text-5xl font-bold text-[var(--foreground)] mb-6">
+                <h1 className="text-4xl lg:text-5xl font-bold text-foreground mb-6">
                   Vista-se com
-                  <span className="block text-[var(--primary)]">Estilo e Elegância</span>
+                  <span className="block text-primary">Estilo e Elegância</span>
                 </h1>
                 <p className="text-lg text-muted-foreground mb-8">
-                  Descubra as últimas tendências em moda feminina. Peças exclusivas para todas as ocasiões,
-                  com qualidade premium e preços acessíveis.
+                  Descubra as últimas tendências em moda feminina. Peças
+                  exclusivas para todas as ocasiões, com qualidade premium e
+                  preços acessíveis.
                 </p>
                 <div className="flex flex-wrap gap-4">
                   <a
                     href="#produtos"
-                    className="px-8 py-3 bg-[var(--foreground)] text-[var(--background)] rounded-xl font-semibold hover:opacity-90 transition-opacity"
+                    className="px-8 py-3 bg-foreground text-background rounded-xl font-semibold hover:opacity-90 transition-opacity"
                   >
                     Ver Coleção
                   </a>
                   <a
                     href="#sobre"
-                    className="px-8 py-3 border-2 border-[var(--foreground)] text-[var(--foreground)] rounded-xl font-semibold hover:bg-[var(--foreground)] hover:text-[var(--background)] transition-colors"
+                    className="px-8 py-3 border-2 border-foreground text-foreground rounded-xl font-semibold hover:bg-foreground hover:text-background transition-colors"
                   >
                     Saiba Mais
                   </a>
@@ -93,13 +95,13 @@ export default function LojaPage() {
               {/* Logo */}
               <div className="flex justify-center lg:justify-end">
                 <div className="relative">
-                  <div className="absolute inset-0 bg-[var(--accent)] rounded-full blur-3xl opacity-20 scale-110" />
+                  <div className="absolute inset-0 bg-accent rounded-full blur-3xl opacity-20 scale-110" />
                   <Image
                     src="/logo.jpg"
                     alt="D'Flor Elegance"
                     width={320}
                     height={320}
-                    className="relative rounded-full object-cover shadow-2xl border-4 border-[var(--background)]"
+                    className="relative rounded-full object-cover shadow-2xl border-4 border-background"
                     priority
                   />
                 </div>
@@ -110,11 +112,11 @@ export default function LojaPage() {
 
         {/* Featured Products */}
         {featuredProducts.length > 0 && (
-          <section className="py-16 bg-[var(--background)]">
+          <section className="py-16 bg-background">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="flex items-center justify-between mb-8">
                 <div>
-                  <h2 className="text-2xl lg:text-3xl font-bold text-[var(--foreground)]">
+                  <h2 className="text-2xl lg:text-3xl font-bold text-foreground">
                     Destaques
                   </h2>
                   <p className="text-muted-foreground mt-1">
@@ -137,10 +139,10 @@ export default function LojaPage() {
         )}
 
         {/* Categories Section */}
-        <section id="categorias" className="py-16 bg-[var(--secondary)]">
+        <section id="categorias" className="py-16 bg-secondary">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-12">
-              <h2 className="text-2xl lg:text-3xl font-bold text-[var(--foreground)]">
+              <h2 className="text-2xl lg:text-3xl font-bold text-foreground">
                 Categorias
               </h2>
               <p className="text-muted-foreground mt-2">
@@ -155,8 +157,8 @@ export default function LojaPage() {
                   onClick={() => setSelectedCategory(category)}
                   className={`px-6 py-3 rounded-full font-medium transition-all ${
                     selectedCategory === category
-                      ? "bg-[var(--foreground)] text-[var(--background)]"
-                      : "bg-[var(--card-bg)] text-[var(--foreground)] hover:bg-[var(--border)]"
+                      ? "bg-foreground text-background"
+                      : "bg-card-bg text-foreground hover:bg-border"
                   }`}
                 >
                   {category}
@@ -167,28 +169,39 @@ export default function LojaPage() {
         </section>
 
         {/* All Products */}
-        <section id="produtos" className="py-16 bg-[var(--background)]">
+        <section id="produtos" className="py-16 bg-background">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between mb-8">
               <div>
-                <h2 className="text-2xl lg:text-3xl font-bold text-[var(--foreground)]">
+                <h2 className="text-2xl lg:text-3xl font-bold text-foreground">
                   {searchQuery
                     ? `Resultados para "${searchQuery}"`
                     : selectedCategory === "Todos"
-                    ? "Todos os Produtos"
-                    : selectedCategory}
+                      ? "Todos os Produtos"
+                      : selectedCategory}
                 </h2>
                 <p className="text-muted-foreground mt-1">
-                  {filteredProducts.length} {filteredProducts.length === 1 ? "produto encontrado" : "produtos encontrados"}
+                  {filteredProducts.length}{" "}
+                  {filteredProducts.length === 1
+                    ? "produto encontrado"
+                    : "produtos encontrados"}
                 </p>
               </div>
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery("")}
-                  className="flex items-center gap-2 px-4 py-2 bg-[var(--secondary)] hover:bg-[var(--border)] rounded-lg text-sm transition-colors"
+                  className="flex items-center gap-2 px-4 py-2 bg-secondary hover:bg-border rounded-lg text-sm transition-colors"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M18 6 6 18M6 6l12 12"/>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                  >
+                    <path d="M18 6 6 18M6 6l12 12" />
                   </svg>
                   Limpar busca
                 </button>
@@ -228,7 +241,7 @@ export default function LojaPage() {
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery("")}
-                    className="mt-4 px-6 py-2 bg-[var(--foreground)] text-[var(--background)] rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
+                    className="mt-4 px-6 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
                   >
                     Ver todos os produtos
                   </button>
@@ -239,47 +252,52 @@ export default function LojaPage() {
         </section>
 
         {/* About Section */}
-        <section id="sobre" className="py-16 bg-[var(--secondary)]">
+        <section id="sobre" className="py-16 bg-secondary">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <div>
-                <h2 className="text-2xl lg:text-3xl font-bold text-[var(--foreground)] mb-6">
+                <h2 className="text-2xl lg:text-3xl font-bold text-foreground mb-6">
                   Sobre Nossa Loja
                 </h2>
                 <p className="text-muted-foreground mb-4 leading-relaxed">
-                  Há mais de 10 anos no mercado, somos referência em moda de qualidade.
-                  Nossa missão é proporcionar a melhor experiência de compra, oferecendo
-                  peças que combinam estilo, conforto e preço justo.
+                  Há mais de 10 anos no mercado, somos referência em moda de
+                  qualidade. Nossa missão é proporcionar a melhor experiência de
+                  compra, oferecendo peças que combinam estilo, conforto e preço
+                  justo.
                 </p>
                 <p className="text-muted-foreground mb-6 leading-relaxed">
-                  Trabalhamos com as melhores marcas e tecidos, garantindo durabilidade
-                  e satisfação em cada compra. Nossa equipe está sempre pronta para
-                  ajudá-lo a encontrar o look perfeito.
+                  Trabalhamos com as melhores marcas e tecidos, garantindo
+                  durabilidade e satisfação em cada compra. Nossa equipe está
+                  sempre pronta para ajudá-lo a encontrar o look perfeito.
                 </p>
                 <div className="grid grid-cols-3 gap-4">
-                  <div className="text-center p-4 bg-[var(--card-bg)] rounded-xl">
-                    <p className="text-2xl font-bold text-[var(--foreground)]">10+</p>
-                    <p className="text-sm text-muted-foreground">Anos de experiência</p>
+                  <div className="text-center p-4 bg-card-bg rounded-xl">
+                    <p className="text-2xl font-bold text-foreground">10+</p>
+                    <p className="text-sm text-muted-foreground">
+                      Anos de experiência
+                    </p>
                   </div>
-                  <div className="text-center p-4 bg-[var(--card-bg)] rounded-xl">
-                    <p className="text-2xl font-bold text-[var(--foreground)]">50k+</p>
-                    <p className="text-sm text-muted-foreground">Clientes satisfeitos</p>
+                  <div className="text-center p-4 bg-card-bg rounded-xl">
+                    <p className="text-2xl font-bold text-foreground">50k+</p>
+                    <p className="text-sm text-muted-foreground">
+                      Clientes satisfeitos
+                    </p>
                   </div>
-                  <div className="text-center p-4 bg-[var(--card-bg)] rounded-xl">
-                    <p className="text-2xl font-bold text-[var(--foreground)]">1000+</p>
+                  <div className="text-center p-4 bg-card-bg rounded-xl">
+                    <p className="text-2xl font-bold text-foreground">1000+</p>
                     <p className="text-sm text-muted-foreground">Produtos</p>
                   </div>
                 </div>
               </div>
               <div className="relative">
-                <div className="aspect-square rounded-2xl overflow-hidden bg-[var(--card-bg)] border border-[var(--border)]">
+                <div className="aspect-square rounded-2xl overflow-hidden bg-card-bg border border-border">
                   <img
                     src="https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?w=800"
                     alt="Nossa Loja"
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-[var(--foreground)] rounded-2xl flex items-center justify-center text-[var(--background)]">
+                <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-foreground rounded-2xl flex items-center justify-center text-background">
                   <div className="text-center">
                     <p className="text-2xl font-bold">100%</p>
                     <p className="text-xs">Satisfação</p>
@@ -291,23 +309,24 @@ export default function LojaPage() {
         </section>
 
         {/* CTA Section */}
-        <section className="py-16 bg-[var(--foreground)]">
+        <section className="py-16 bg-foreground">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-2xl lg:text-3xl font-bold text-[var(--background)] mb-4">
+            <h2 className="text-2xl lg:text-3xl font-bold text-background mb-4">
               Cadastre-se e ganhe 10% de desconto
             </h2>
-            <p className="text-[var(--background)]/70 mb-8 max-w-md mx-auto">
-              Receba novidades, promoções exclusivas e dicas de moda diretamente no seu e-mail.
+            <p className="text-background/70 mb-8 max-w-md mx-auto">
+              Receba novidades, promoções exclusivas e dicas de moda diretamente
+              no seu e-mail.
             </p>
             <form className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
               <input
                 type="email"
                 placeholder="Seu melhor e-mail"
-                className="flex-1 px-4 py-3 rounded-xl bg-[var(--background)] text-[var(--foreground)] placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-background/50"
+                className="flex-1 px-4 py-3 rounded-xl bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-background/50"
               />
               <button
                 type="submit"
-                className="px-6 py-3 bg-[var(--background)] text-[var(--foreground)] rounded-xl font-semibold hover:opacity-90 transition-opacity"
+                className="px-6 py-3 bg-background text-foreground rounded-xl font-semibold hover:opacity-90 transition-opacity"
               >
                 Cadastrar
               </button>

@@ -60,13 +60,19 @@ const statusLabels: Record<string, string> = {
 };
 
 const statusColors: Record<string, string> = {
-  pending_payment: "bg-amber-500/20 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 border border-amber-500/30",
+  pending_payment:
+    "bg-amber-500/20 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 border border-amber-500/30",
   paid: "bg-emerald-500/20 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 border border-emerald-500/30",
-  preparing: "bg-blue-500/20 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 border border-blue-500/30",
-  shipped: "bg-violet-500/20 text-violet-700 dark:bg-violet-500/20 dark:text-violet-400 border border-violet-500/30",
-  delivered: "bg-teal-500/20 text-teal-700 dark:bg-teal-500/20 dark:text-teal-400 border border-teal-500/30",
-  cancelled: "bg-red-500/20 text-red-700 dark:bg-red-500/20 dark:text-red-400 border border-red-500/30",
-  refunded: "bg-slate-500/20 text-slate-700 dark:bg-slate-500/20 dark:text-slate-400 border border-slate-500/30",
+  preparing:
+    "bg-blue-500/20 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 border border-blue-500/30",
+  shipped:
+    "bg-violet-500/20 text-violet-700 dark:bg-violet-500/20 dark:text-violet-400 border border-violet-500/30",
+  delivered:
+    "bg-teal-500/20 text-teal-700 dark:bg-teal-500/20 dark:text-teal-400 border border-teal-500/30",
+  cancelled:
+    "bg-red-500/20 text-red-700 dark:bg-red-500/20 dark:text-red-400 border border-red-500/30",
+  refunded:
+    "bg-slate-500/20 text-slate-700 dark:bg-slate-500/20 dark:text-slate-400 border border-slate-500/30",
 };
 
 export default function AdminOrders() {
@@ -100,7 +106,9 @@ export default function AdminOrders() {
         setOrders(data);
       } else if (data.error) {
         console.error("Erro da API:", data.error);
-        setErrorMessage("Execute o SQL no Supabase para criar a tabela de pedidos");
+        setErrorMessage(
+          "Execute o SQL no Supabase para criar a tabela de pedidos",
+        );
         setOrders([]);
       } else {
         setOrders([]);
@@ -139,9 +147,11 @@ export default function AdminOrders() {
       const data = await response.json();
 
       // Atualizar lista de pedidos
-      setOrders(orders.map(o =>
-        o.id === selectedOrder.id ? { ...o, ...data.order } : o
-      ));
+      setOrders(
+        orders.map((o) =>
+          o.id === selectedOrder.id ? { ...o, ...data.order } : o,
+        ),
+      );
       setSelectedOrder({ ...selectedOrder, ...data.order });
 
       setSuccessMessage("Status atualizado com sucesso!");
@@ -166,7 +176,7 @@ export default function AdminOrders() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           tracking_code: trackingCode,
-          status: "shipped"
+          status: "shipped",
         }),
       });
 
@@ -174,9 +184,11 @@ export default function AdminOrders() {
 
       const data = await response.json();
 
-      setOrders(orders.map(o =>
-        o.id === selectedOrder.id ? { ...o, ...data.order } : o
-      ));
+      setOrders(
+        orders.map((o) =>
+          o.id === selectedOrder.id ? { ...o, ...data.order } : o,
+        ),
+      );
       setSelectedOrder({ ...selectedOrder, ...data.order });
 
       setSuccessMessage("Código de rastreio salvo!");
@@ -203,18 +215,19 @@ export default function AdminOrders() {
     return `R$ ${Number(value).toFixed(2).replace(".", ",")}`;
   };
 
-  const filteredOrders = filterStatus === "all"
-    ? (orders || [])
-    : (orders || []).filter(o => o.status === filterStatus);
+  const filteredOrders =
+    filterStatus === "all"
+      ? orders || []
+      : (orders || []).filter((o) => o.status === filterStatus);
 
   if (!user.isAdmin) {
     return null;
   }
 
   return (
-    <div className="min-h-screen bg-[var(--background)]">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-[var(--background)]/80 backdrop-blur-md border-b border-[var(--border)]">
+      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-4">
@@ -223,30 +236,30 @@ export default function AdminOrders() {
                   <span className="font-display text-xl tracking-wide">
                     D&apos; flor
                   </span>
-                  <span className="font-body text-[8px] tracking-[0.3em] uppercase text-[var(--muted)] -mt-1">
+                  <span className="font-body text-[8px] tracking-[0.3em] uppercase text-muted -mt-1">
                     elegance
                   </span>
                 </div>
               </Link>
-              <span className="text-[var(--muted)]">/</span>
+              <span className="text-muted">/</span>
               <span className="font-semibold">Pedidos</span>
             </div>
             <div className="flex items-center gap-4">
               <Link
                 href="/admin"
-                className="text-sm text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+                className="text-sm text-muted hover:text-foreground transition-colors"
               >
                 Produtos
               </Link>
               <Link
                 href="/loja"
-                className="text-sm text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+                className="text-sm text-muted hover:text-foreground transition-colors"
               >
                 Ver Loja
               </Link>
               <button
                 onClick={logout}
-                className="px-4 py-2 text-sm bg-[var(--secondary)] hover:bg-[var(--border)] rounded-lg transition-colors"
+                className="px-4 py-2 text-sm bg-secondary hover:bg-border rounded-lg transition-colors"
               >
                 Sair
               </button>
@@ -264,7 +277,7 @@ export default function AdminOrders() {
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="px-3 py-2 rounded-lg border border-[var(--border)] bg-[var(--background)] text-sm"
+                className="px-3 py-2 rounded-lg border border-border bg-background text-sm"
               >
                 <option value="all">Todos</option>
                 <option value="pending_payment">Aguardando Pagamento</option>
@@ -278,11 +291,11 @@ export default function AdminOrders() {
 
             <div className="space-y-2 max-h-[calc(100vh-200px)] overflow-y-auto">
               {isLoading ? (
-                <div className="text-center py-8 text-[var(--muted)]">
+                <div className="text-center py-8 text-muted">
                   Carregando pedidos...
                 </div>
               ) : filteredOrders.length === 0 ? (
-                <div className="text-center py-8 text-[var(--muted)]">
+                <div className="text-center py-8 text-muted">
                   Nenhum pedido encontrado
                 </div>
               ) : (
@@ -292,28 +305,36 @@ export default function AdminOrders() {
                     onClick={() => handleSelectOrder(order)}
                     className={`w-full p-5 rounded-xl border transition-all text-left ${
                       selectedOrder?.id === order.id
-                        ? "bg-[var(--foreground)] text-[var(--background)] border-[var(--foreground)]"
-                        : "bg-[var(--card-bg)] border-[var(--border)] hover:border-[var(--foreground)]"
+                        ? "bg-foreground text-background border-foreground"
+                        : "bg-card-bg border-border hover:border-foreground"
                     }`}
                   >
                     <div className="flex items-center justify-between gap-2 mb-1">
-                      <span className="font-bold text-sm truncate">#{order.order_number}</span>
+                      <span className="font-bold text-sm truncate">
+                        #{order.order_number}
+                      </span>
                       <span className="font-bold text-lg whitespace-nowrap">
                         {formatCurrency(order.total)}
                       </span>
                     </div>
-                    <p className={`text-sm mb-2 truncate ${selectedOrder?.id === order.id ? "opacity-80" : "text-[var(--muted)]"}`}>
+                    <p
+                      className={`text-sm mb-2 truncate ${selectedOrder?.id === order.id ? "opacity-80" : "text-muted"}`}
+                    >
                       {order.customer_name}
                     </p>
                     <div className="flex items-center justify-between gap-2">
-                      <span className={`text-sm ${selectedOrder?.id === order.id ? "opacity-80" : "text-[var(--muted)]"}`}>
+                      <span
+                        className={`text-sm ${selectedOrder?.id === order.id ? "opacity-80" : "text-muted"}`}
+                      >
                         {formatDate(order.created_at)}
                       </span>
-                      <span className={`text-xs px-3 py-1 rounded-full whitespace-nowrap font-medium ${
-                        selectedOrder?.id === order.id
-                          ? "bg-white/20"
-                          : statusColors[order.status]
-                      }`}>
+                      <span
+                        className={`text-xs px-3 py-1 rounded-full whitespace-nowrap font-medium ${
+                          selectedOrder?.id === order.id
+                            ? "bg-white/20"
+                            : statusColors[order.status]
+                        }`}
+                      >
                         {statusLabels[order.status]}
                       </span>
                     </div>
@@ -326,17 +347,19 @@ export default function AdminOrders() {
           {/* Order Details */}
           <div className="lg:w-2/3">
             {selectedOrder ? (
-              <div className="bg-[var(--card-bg)] border border-[var(--border)] rounded-2xl p-6">
+              <div className="bg-card-bg border border-border rounded-2xl p-6">
                 <div className="flex items-center justify-between mb-6">
                   <div>
                     <h2 className="text-xl font-bold">
                       Pedido #{selectedOrder.order_number}
                     </h2>
-                    <p className="text-sm text-[var(--muted)]">
+                    <p className="text-sm text-muted">
                       {formatDate(selectedOrder.created_at)}
                     </p>
                   </div>
-                  <span className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap ${statusColors[selectedOrder.status]}`}>
+                  <span
+                    className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap ${statusColors[selectedOrder.status]}`}
+                  >
                     {statusLabels[selectedOrder.status]}
                   </span>
                 </div>
@@ -355,8 +378,10 @@ export default function AdminOrders() {
 
                 <div className="space-y-6">
                   {/* Status Actions */}
-                  <div className="p-4 bg-[var(--secondary)] rounded-xl">
-                    <label className="block text-sm font-medium mb-3">Atualizar Status</label>
+                  <div className="p-4 bg-secondary rounded-xl">
+                    <label className="block text-sm font-medium mb-3">
+                      Atualizar Status
+                    </label>
                     <div className="flex flex-wrap gap-2">
                       {selectedOrder.status === "pending_payment" && (
                         <button
@@ -376,7 +401,8 @@ export default function AdminOrders() {
                           Preparando
                         </button>
                       )}
-                      {(selectedOrder.status === "paid" || selectedOrder.status === "preparing") && (
+                      {(selectedOrder.status === "paid" ||
+                        selectedOrder.status === "preparing") && (
                         <button
                           onClick={() => handleUpdateStatus("shipped")}
                           disabled={isSaving}
@@ -394,41 +420,47 @@ export default function AdminOrders() {
                           Marcar como Entregue
                         </button>
                       )}
-                      {selectedOrder.status !== "cancelled" && selectedOrder.status !== "delivered" && (
-                        <button
-                          onClick={() => handleUpdateStatus("cancelled")}
-                          disabled={isSaving}
-                          className="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50"
-                        >
-                          Cancelar Pedido
-                        </button>
-                      )}
+                      {selectedOrder.status !== "cancelled" &&
+                        selectedOrder.status !== "delivered" && (
+                          <button
+                            onClick={() => handleUpdateStatus("cancelled")}
+                            disabled={isSaving}
+                            className="px-4 py-2 bg-red-500 text-white rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50"
+                          >
+                            Cancelar Pedido
+                          </button>
+                        )}
                     </div>
                   </div>
 
                   {/* Tracking Code */}
-                  {(selectedOrder.status === "paid" || selectedOrder.status === "preparing" || selectedOrder.status === "shipped") && (
-                    <div className="p-4 bg-[var(--secondary)] rounded-xl">
-                      <label className="block text-sm font-medium mb-3">Código de Rastreio</label>
+                  {(selectedOrder.status === "paid" ||
+                    selectedOrder.status === "preparing" ||
+                    selectedOrder.status === "shipped") && (
+                    <div className="p-4 bg-secondary rounded-xl">
+                      <label className="block text-sm font-medium mb-3">
+                        Código de Rastreio
+                      </label>
                       <div className="flex gap-2">
                         <input
                           type="text"
                           value={trackingCode}
                           onChange={(e) => setTrackingCode(e.target.value)}
                           placeholder="Ex: BR123456789BR"
-                          className="flex-1 px-4 py-2 rounded-lg border border-[var(--border)] bg-[var(--background)]"
+                          className="flex-1 px-4 py-2 rounded-lg border border-border bg-background"
                         />
                         <button
                           onClick={handleUpdateTracking}
                           disabled={isSaving || !trackingCode}
-                          className="px-4 py-2 bg-[var(--foreground)] text-[var(--background)] rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50"
+                          className="px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50"
                         >
                           {isSaving ? "Salvando..." : "Salvar e Enviar"}
                         </button>
                       </div>
                       {selectedOrder.tracking_code && (
-                        <p className="mt-2 text-sm text-[var(--muted)]">
-                          Rastreio atual: <strong>{selectedOrder.tracking_code}</strong>
+                        <p className="mt-2 text-sm text-muted">
+                          Rastreio atual:{" "}
+                          <strong>{selectedOrder.tracking_code}</strong>
                         </p>
                       )}
                     </div>
@@ -439,23 +471,31 @@ export default function AdminOrders() {
                     <h3 className="font-semibold mb-3">Dados do Cliente</h3>
                     <div className="grid md:grid-cols-2 gap-4 text-sm">
                       <div>
-                        <span className="text-[var(--muted)]">Nome:</span>
-                        <p className="font-medium">{selectedOrder.customer_name}</p>
+                        <span className="text-muted">Nome:</span>
+                        <p className="font-medium">
+                          {selectedOrder.customer_name}
+                        </p>
                       </div>
                       <div>
-                        <span className="text-[var(--muted)]">Email:</span>
-                        <p className="font-medium">{selectedOrder.customer_email}</p>
+                        <span className="text-muted">Email:</span>
+                        <p className="font-medium">
+                          {selectedOrder.customer_email}
+                        </p>
                       </div>
                       {selectedOrder.customer_phone && (
                         <div>
-                          <span className="text-[var(--muted)]">Telefone:</span>
-                          <p className="font-medium">{selectedOrder.customer_phone}</p>
+                          <span className="text-muted">Telefone:</span>
+                          <p className="font-medium">
+                            {selectedOrder.customer_phone}
+                          </p>
                         </div>
                       )}
                       {selectedOrder.customer_cpf && (
                         <div>
-                          <span className="text-[var(--muted)]">CPF:</span>
-                          <p className="font-medium">{selectedOrder.customer_cpf}</p>
+                          <span className="text-muted">CPF:</span>
+                          <p className="font-medium">
+                            {selectedOrder.customer_cpf}
+                          </p>
                         </div>
                       )}
                     </div>
@@ -466,17 +506,21 @@ export default function AdminOrders() {
                     <h3 className="font-semibold mb-3">Endereço de Entrega</h3>
                     <div className="text-sm">
                       <p>
-                        {selectedOrder.shipping_address.street}, {selectedOrder.shipping_address.number}
-                        {selectedOrder.shipping_address.complement && ` - ${selectedOrder.shipping_address.complement}`}
+                        {selectedOrder.shipping_address.street},{" "}
+                        {selectedOrder.shipping_address.number}
+                        {selectedOrder.shipping_address.complement &&
+                          ` - ${selectedOrder.shipping_address.complement}`}
                       </p>
                       <p>{selectedOrder.shipping_address.neighborhood}</p>
                       <p>
-                        {selectedOrder.shipping_address.city} - {selectedOrder.shipping_address.state}
+                        {selectedOrder.shipping_address.city} -{" "}
+                        {selectedOrder.shipping_address.state}
                       </p>
                       <p>CEP: {selectedOrder.shipping_address.zip_code}</p>
                       {selectedOrder.shipping_method && (
-                        <p className="mt-2 text-[var(--muted)]">
-                          Envio: {selectedOrder.shipping_method} ({selectedOrder.shipping_deadline})
+                        <p className="mt-2 text-muted">
+                          Envio: {selectedOrder.shipping_method} (
+                          {selectedOrder.shipping_deadline})
                         </p>
                       )}
                     </div>
@@ -489,9 +533,9 @@ export default function AdminOrders() {
                       {selectedOrder.order_items?.map((item) => (
                         <div
                           key={item.id}
-                          className="flex items-center gap-4 p-3 bg-[var(--secondary)] rounded-lg"
+                          className="flex items-center gap-4 p-3 bg-secondary rounded-lg"
                         >
-                          <div className="w-16 h-16 rounded-lg overflow-hidden bg-[var(--border)]">
+                          <div className="w-16 h-16 rounded-lg overflow-hidden bg-border">
                             {item.product_image && (
                               <img
                                 src={item.product_image}
@@ -502,17 +546,25 @@ export default function AdminOrders() {
                           </div>
                           <div className="flex-1">
                             <p className="font-medium">{item.product_name}</p>
-                            <div className="text-sm text-[var(--muted)]">
-                              {item.selected_size && <span>Tam: {item.selected_size}</span>}
-                              {item.selected_size && item.selected_color && <span> | </span>}
-                              {item.selected_color && <span>Cor: {item.selected_color}</span>}
+                            <div className="text-sm text-muted">
+                              {item.selected_size && (
+                                <span>Tam: {item.selected_size}</span>
+                              )}
+                              {item.selected_size && item.selected_color && (
+                                <span> | </span>
+                              )}
+                              {item.selected_color && (
+                                <span>Cor: {item.selected_color}</span>
+                              )}
                             </div>
                             <p className="text-sm">
                               {item.quantity}x {formatCurrency(item.unit_price)}
                             </p>
                           </div>
                           <div className="text-right">
-                            <p className="font-semibold">{formatCurrency(item.total_price)}</p>
+                            <p className="font-semibold">
+                              {formatCurrency(item.total_price)}
+                            </p>
                           </div>
                         </div>
                       ))}
@@ -520,15 +572,17 @@ export default function AdminOrders() {
                   </div>
 
                   {/* Order Summary */}
-                  <div className="border-t border-[var(--border)] pt-4">
+                  <div className="border-t border-border pt-4">
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-[var(--muted)]">Subtotal:</span>
+                        <span className="text-muted">Subtotal:</span>
                         <span>{formatCurrency(selectedOrder.subtotal)}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-[var(--muted)]">Frete:</span>
-                        <span>{formatCurrency(selectedOrder.shipping_cost)}</span>
+                        <span className="text-muted">Frete:</span>
+                        <span>
+                          {formatCurrency(selectedOrder.shipping_cost)}
+                        </span>
                       </div>
                       {selectedOrder.discount > 0 && (
                         <div className="flex justify-between text-green-600">
@@ -536,7 +590,7 @@ export default function AdminOrders() {
                           <span>-{formatCurrency(selectedOrder.discount)}</span>
                         </div>
                       )}
-                      <div className="flex justify-between text-lg font-bold pt-2 border-t border-[var(--border)]">
+                      <div className="flex justify-between text-lg font-bold pt-2 border-t border-border">
                         <span>Total:</span>
                         <span>{formatCurrency(selectedOrder.total)}</span>
                       </div>
@@ -545,7 +599,7 @@ export default function AdminOrders() {
 
                   {/* Payment Info */}
                   {selectedOrder.payment_method && (
-                    <div className="text-sm text-[var(--muted)]">
+                    <div className="text-sm text-muted">
                       <p>Forma de pagamento: {selectedOrder.payment_method}</p>
                       {selectedOrder.paid_at && (
                         <p>Pago em: {formatDate(selectedOrder.paid_at)}</p>
@@ -555,9 +609,9 @@ export default function AdminOrders() {
                 </div>
               </div>
             ) : (
-              <div className="bg-[var(--card-bg)] border border-[var(--border)] rounded-2xl p-12 text-center">
+              <div className="bg-card-bg border border-border rounded-2xl p-12 text-center">
                 <svg
-                  className="w-16 h-16 mx-auto text-[var(--muted)] mb-4"
+                  className="w-16 h-16 mx-auto text-muted mb-4"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -569,7 +623,7 @@ export default function AdminOrders() {
                     d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
                   />
                 </svg>
-                <p className="text-[var(--muted)]">
+                <p className="text-muted">
                   Selecione um pedido para ver os detalhes
                 </p>
               </div>

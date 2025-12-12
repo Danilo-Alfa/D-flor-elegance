@@ -100,6 +100,7 @@ src/
 Acesse `/admin/login` e use a senha configurada no `.env.local` (padrão: `admin123`).
 
 No painel você pode:
+
 - Visualizar todos os produtos
 - Editar nome, descrição, preço, estoque
 - Adicionar/remover imagens (via URL)
@@ -139,6 +140,7 @@ O componente `ImageFrame` aceita URLs de imagens diretas. Para adicionar imagens
 O projeto está pronto para deploy na Vercel ou outras plataformas.
 
 Lembre-se de configurar as variáveis de ambiente no painel de deploy:
+
 - `ADMIN_PASSWORD`
 - `MERCADOPAGO_ACCESS_TOKEN`
 - `NEXT_PUBLIC_BASE_URL`

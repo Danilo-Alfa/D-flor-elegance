@@ -17,10 +17,7 @@ export async function POST(request: NextRequest) {
     const cepOrigemLimpo = cepOrigem.replace(/\D/g, "");
 
     if (cepDestinoLimpo.length !== 8) {
-      return NextResponse.json(
-        { error: "CEP inválido" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "CEP inválido" }, { status: 400 });
     }
 
     const opcoes = calcularFretePorRegiao(cepOrigemLimpo, cepDestinoLimpo);
@@ -31,9 +28,9 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       opcoes: [
-        { codigo: "PAC", nome: "PAC", preco: 24.90, prazo: 8 },
-        { codigo: "SEDEX", nome: "SEDEX", preco: 39.90, prazo: 3 }
-      ]
+        { codigo: "PAC", nome: "PAC", preco: 24.9, prazo: 8 },
+        { codigo: "SEDEX", nome: "SEDEX", preco: 39.9, prazo: 3 },
+      ],
     });
   }
 }
@@ -54,7 +51,7 @@ function calcularFretePorRegiao(cepOrigem: string, cepDestino: string) {
     6: [5, 7],
     7: [3, 4, 6, 8, 9],
     8: [1, 7, 9],
-    9: [7, 8]
+    9: [7, 8],
   };
 
   const regiaoProxima = regioesProximas[regiaoOrigem]?.includes(regiaoDestino);
@@ -66,18 +63,18 @@ function calcularFretePorRegiao(cepOrigem: string, cepDestino: string) {
 
   // === VALORES REALISTAS PARA ROUPAS (PAC/SEDEX) ===
   if (mesmaRegiao) {
-    precoPAC = 19.90;
-    precoSEDEX = 29.90;
+    precoPAC = 19.9;
+    precoSEDEX = 29.9;
     prazoPAC = 5;
     prazoSEDEX = 2;
   } else if (regiaoProxima) {
-    precoPAC = 24.90;
-    precoSEDEX = 39.90;
+    precoPAC = 24.9;
+    precoSEDEX = 39.9;
     prazoPAC = 7;
     prazoSEDEX = 3;
   } else {
-    precoPAC = 34.90;
-    precoSEDEX = 54.90;
+    precoPAC = 34.9;
+    precoSEDEX = 54.9;
     prazoPAC = 12;
     prazoSEDEX = 5;
   }
@@ -93,6 +90,6 @@ function calcularFretePorRegiao(cepOrigem: string, cepDestino: string) {
 
   return [
     { codigo: "PAC", nome: "PAC", preco: precoPAC, prazo: prazoPAC },
-    { codigo: "SEDEX", nome: "SEDEX", preco: precoSEDEX, prazo: prazoSEDEX }
+    { codigo: "SEDEX", nome: "SEDEX", preco: precoSEDEX, prazo: prazoSEDEX },
   ];
 }

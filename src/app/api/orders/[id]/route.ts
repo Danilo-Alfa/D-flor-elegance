@@ -4,17 +4,19 @@ import { supabase } from "@/lib/supabase";
 // GET - Buscar pedido específico
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
 
     const { data, error } = await supabase
       .from("orders")
-      .select(`
+      .select(
+        `
         *,
         order_items (*)
-      `)
+      `,
+      )
       .eq("id", id)
       .single();
 
@@ -22,7 +24,7 @@ export async function GET(
       console.error("Erro ao buscar pedido:", error);
       return NextResponse.json(
         { error: "Pedido não encontrado" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -31,7 +33,7 @@ export async function GET(
     console.error("Erro ao buscar pedido:", error);
     return NextResponse.json(
       { error: "Erro interno do servidor" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -39,7 +41,7 @@ export async function GET(
 // PUT - Atualizar pedido (status, código de rastreio, etc)
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
@@ -80,7 +82,7 @@ export async function PUT(
     if (Object.keys(updateData).length === 0) {
       return NextResponse.json(
         { error: "Nenhum dado para atualizar" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -95,7 +97,7 @@ export async function PUT(
       console.error("Erro ao atualizar pedido:", error);
       return NextResponse.json(
         { error: "Erro ao atualizar pedido" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -104,7 +106,7 @@ export async function PUT(
     console.error("Erro ao atualizar pedido:", error);
     return NextResponse.json(
       { error: "Erro interno do servidor" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

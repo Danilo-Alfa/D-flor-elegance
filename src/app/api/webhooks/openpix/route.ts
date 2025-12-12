@@ -6,7 +6,7 @@ import crypto from "crypto";
 function verifyWebhookSignature(
   payload: string,
   signature: string | null,
-  webhookSecret: string
+  webhookSecret: string,
 ): boolean {
   if (!signature || !webhookSecret) {
     return false;
@@ -19,7 +19,7 @@ function verifyWebhookSignature(
 
   return crypto.timingSafeEqual(
     Buffer.from(signature),
-    Buffer.from(expectedSignature)
+    Buffer.from(expectedSignature),
   );
 }
 
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
         console.error("Assinatura do webhook OpenPix invalida");
         return NextResponse.json(
           { error: "Invalid signature" },
-          { status: 401 }
+          { status: 401 },
         );
       }
     }
@@ -59,14 +59,17 @@ export async function POST(request: NextRequest) {
               status: "paid",
               paid_at: new Date().toISOString(),
               payment_method: "pix",
-              openpix_transaction_id: event.pix?.transactionID || charge?.transactionID,
+              openpix_transaction_id:
+                event.pix?.transactionID || charge?.transactionID,
             })
             .eq("order_number", correlationID);
 
           if (error) {
             console.error("Erro ao atualizar pedido:", error);
           } else {
-            console.log(`Pedido ${correlationID} marcado como pago via PIX OpenPix`);
+            console.log(
+              `Pedido ${correlationID} marcado como pago via PIX OpenPix`,
+            );
           }
         }
         break;
@@ -122,7 +125,9 @@ export async function POST(request: NextRequest) {
           if (error) {
             console.error("Erro ao atualizar pedido:", error);
           } else {
-            console.log(`Transacao PIX confirmada para pedido ${correlationID}`);
+            console.log(
+              `Transacao PIX confirmada para pedido ${correlationID}`,
+            );
           }
         }
         break;
@@ -158,7 +163,7 @@ export async function POST(request: NextRequest) {
     console.error("Erro no webhook OpenPix:", error);
     return NextResponse.json(
       { error: "Webhook handler failed" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
     if (!orderNumber) {
       return NextResponse.json(
         { error: "Numero do pedido nao fornecido" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -29,16 +29,13 @@ export async function POST(request: NextRequest) {
       console.error("Erro ao atualizar pedido:", error);
       return NextResponse.json(
         { error: "Erro ao confirmar pagamento" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
     return NextResponse.json({ success: true, order: data });
   } catch (error) {
     console.error("Erro:", error);
-    return NextResponse.json(
-      { error: "Erro interno" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
   }
 }

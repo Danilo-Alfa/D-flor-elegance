@@ -28,8 +28,12 @@ export default function LoginPage() {
       await login(email, password);
       router.push("/minha-conta");
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : "Erro ao fazer login";
-      if (errorMessage.includes("invalid-credential") || errorMessage.includes("wrong-password")) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Erro ao fazer login";
+      if (
+        errorMessage.includes("invalid-credential") ||
+        errorMessage.includes("wrong-password")
+      ) {
         setError("Email ou senha incorretos");
       } else if (errorMessage.includes("user-not-found")) {
         setError("Usuário não encontrado");
@@ -59,25 +63,27 @@ export default function LoginPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--background)]">
-        <div className="animate-spin w-8 h-8 border-2 border-[var(--foreground)] border-t-transparent rounded-full" />
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin w-8 h-8 border-2 border-foreground border-t-transparent rounded-full" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[var(--background)] px-4">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md">
         {/* Logo */}
         <Link href="/" className="flex flex-col items-center mb-8">
-          <span className="font-display text-3xl tracking-wide">D&apos; flor</span>
-          <span className="font-body text-xs tracking-[0.3em] uppercase text-[var(--muted)] -mt-1">
+          <span className="font-display text-3xl tracking-wide">
+            D&apos; flor
+          </span>
+          <span className="font-body text-xs tracking-[0.3em] uppercase text-muted -mt-1">
             elegance
           </span>
         </Link>
 
         {/* Card */}
-        <div className="bg-[var(--card-bg)] border border-[var(--border)] rounded-2xl p-8">
+        <div className="bg-card-bg border border-border rounded-2xl p-8">
           <h1 className="text-2xl font-bold text-center mb-6">Entrar</h1>
 
           {error && (
@@ -94,7 +100,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--background)] focus:outline-none focus:border-[var(--foreground)] transition-colors"
+                className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:outline-none focus:border-foreground transition-colors"
                 placeholder="seu@email.com"
               />
             </div>
@@ -106,7 +112,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--background)] focus:outline-none focus:border-[var(--foreground)] transition-colors"
+                className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:outline-none focus:border-foreground transition-colors"
                 placeholder="Sua senha"
               />
             </div>
@@ -114,7 +120,7 @@ export default function LoginPage() {
             <div className="flex justify-end">
               <Link
                 href="/esqueci-senha"
-                className="text-sm text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+                className="text-sm text-muted hover:text-foreground transition-colors"
               >
                 Esqueceu a senha?
               </Link>
@@ -123,7 +129,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 bg-[var(--foreground)] text-[var(--background)] rounded-xl font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
+              className="w-full py-3 bg-foreground text-background rounded-xl font-semibold hover:opacity-90 transition-opacity disabled:opacity-50"
             >
               {isLoading ? "Entrando..." : "Entrar"}
             </button>
@@ -131,17 +137,17 @@ export default function LoginPage() {
 
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-[var(--border)]"></div>
+              <div className="w-full border-t border-border"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-[var(--card-bg)] text-[var(--muted)]">ou</span>
+              <span className="px-4 bg-card-bg text-muted">ou</span>
             </div>
           </div>
 
           <button
             onClick={handleGoogleLogin}
             disabled={isLoading}
-            className="w-full py-3 border border-[var(--border)] rounded-xl font-medium hover:bg-[var(--secondary)] transition-colors disabled:opacity-50 flex items-center justify-center gap-3"
+            className="w-full py-3 border border-border rounded-xl font-medium hover:bg-secondary transition-colors disabled:opacity-50 flex items-center justify-center gap-3"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path
@@ -164,19 +170,19 @@ export default function LoginPage() {
             Continuar com Google
           </button>
 
-          <p className="mt-6 text-center text-sm text-[var(--muted)]">
+          <p className="mt-6 text-center text-sm text-muted">
             Não tem uma conta?{" "}
             <Link
               href="/cadastro"
-              className="text-[var(--foreground)] font-medium hover:underline"
+              className="text-foreground font-medium hover:underline"
             >
               Cadastre-se
             </Link>
           </p>
         </div>
 
-        <p className="mt-6 text-center text-sm text-[var(--muted)]">
-          <Link href="/" className="hover:text-[var(--foreground)] transition-colors">
+        <p className="mt-6 text-center text-sm text-muted">
+          <Link href="/" className="hover:text-foreground transition-colors">
             ← Voltar para a loja
           </Link>
         </p>

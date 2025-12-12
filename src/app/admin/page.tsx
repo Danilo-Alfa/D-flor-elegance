@@ -9,7 +9,15 @@ import { ImageFrame } from "@/components/ImageFrame";
 
 export default function AdminPanel() {
   const router = useRouter();
-  const { user, logout, products, updateProduct, createProduct, deleteProduct, isLoading } = useStore();
+  const {
+    user,
+    logout,
+    products,
+    updateProduct,
+    createProduct,
+    deleteProduct,
+    isLoading,
+  } = useStore();
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState<Partial<Product>>({});
@@ -33,7 +41,10 @@ export default function AdminPanel() {
     setSuccessMessage("");
   };
 
-  const handleEditChange = (field: keyof Product, value: string | number | boolean | string[] | ProductColor[] | undefined) => {
+  const handleEditChange = (
+    field: keyof Product,
+    value: string | number | boolean | string[] | ProductColor[] | undefined,
+  ) => {
     setEditForm((prev) => ({ ...prev, [field]: value }));
   };
 
@@ -63,7 +74,10 @@ export default function AdminPanel() {
 
   const handleRemoveColor = (index: number) => {
     if (editForm.colors) {
-      handleEditChange("colors", editForm.colors.filter((_, i) => i !== index));
+      handleEditChange(
+        "colors",
+        editForm.colors.filter((_, i) => i !== index),
+      );
     }
   };
 
@@ -76,7 +90,10 @@ export default function AdminPanel() {
 
   const handleRemoveSize = (index: number) => {
     if (editForm.sizes) {
-      handleEditChange("sizes", editForm.sizes.filter((_, i) => i !== index));
+      handleEditChange(
+        "sizes",
+        editForm.sizes.filter((_, i) => i !== index),
+      );
     }
   };
 
@@ -138,7 +155,10 @@ export default function AdminPanel() {
   };
 
   const handleDeleteProduct = async () => {
-    if (selectedProduct && confirm("Tem certeza que deseja excluir este produto?")) {
+    if (
+      selectedProduct &&
+      confirm("Tem certeza que deseja excluir este produto?")
+    ) {
       setIsSaving(true);
       setErrorMessage("");
 
@@ -162,9 +182,9 @@ export default function AdminPanel() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--background)]">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-[var(--background)]/80 backdrop-blur-md border-b border-[var(--border)]">
+      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-4">
@@ -173,30 +193,30 @@ export default function AdminPanel() {
                   <span className="font-display text-xl tracking-wide">
                     D' flor
                   </span>
-                  <span className="font-body text-[8px] tracking-[0.3em] uppercase text-[var(--muted)] -mt-1">
+                  <span className="font-body text-[8px] tracking-[0.3em] uppercase text-muted -mt-1">
                     elegance
                   </span>
                 </div>
               </Link>
-              <span className="text-[var(--muted)]">/</span>
+              <span className="text-muted">/</span>
               <span className="font-semibold">Painel Admin</span>
             </div>
             <div className="flex items-center gap-4">
               <Link
                 href="/admin/pedidos"
-                className="text-sm text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+                className="text-sm text-muted hover:text-foreground transition-colors"
               >
                 Pedidos
               </Link>
               <Link
                 href="/loja"
-                className="text-sm text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+                className="text-sm text-muted hover:text-foreground transition-colors"
               >
                 Ver Loja
               </Link>
               <button
                 onClick={logout}
-                className="px-4 py-2 text-sm bg-[var(--secondary)] hover:bg-[var(--border)] rounded-lg transition-colors"
+                className="px-4 py-2 text-sm bg-secondary hover:bg-border rounded-lg transition-colors"
               >
                 Sair
               </button>
@@ -214,7 +234,7 @@ export default function AdminPanel() {
               <button
                 onClick={handleAddNewProduct}
                 disabled={isSaving}
-                className="px-4 py-2 bg-[var(--foreground)] text-[var(--background)] rounded-lg text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+                className="px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
               >
                 {isSaving ? "Criando..." : "+ Novo Produto"}
               </button>
@@ -222,47 +242,51 @@ export default function AdminPanel() {
 
             <div className="space-y-2 max-h-[calc(100vh-200px)] overflow-y-auto">
               {isLoading ? (
-                <div className="text-center py-8 text-[var(--muted)]">
+                <div className="text-center py-8 text-muted">
                   Carregando produtos...
                 </div>
               ) : products.length === 0 ? (
-                <div className="text-center py-8 text-[var(--muted)]">
+                <div className="text-center py-8 text-muted">
                   Nenhum produto cadastrado
                 </div>
-              ) : products.map((product) => (
-                <button
-                  key={product.id}
-                  onClick={() => handleSelectProduct(product)}
-                  className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left ${
-                    selectedProduct?.id === product.id
-                      ? "bg-[var(--foreground)] text-[var(--background)] border-[var(--foreground)]"
-                      : "bg-[var(--card-bg)] border-[var(--border)] hover:border-[var(--foreground)]"
-                  }`}
-                >
-                  <div className="w-12 h-12 rounded-lg overflow-hidden flex-shrink-0 bg-[var(--secondary)]">
-                    {product.imageUrl && (
-                      <ImageFrame
-                        src={product.imageUrl}
-                        alt={product.name}
-                        className="w-full h-full object-cover"
-                      />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate">{product.name}</p>
-                    <p className={`text-sm ${selectedProduct?.id === product.id ? "opacity-70" : "text-[var(--muted)]"}`}>
-                      R$ {product.price.toFixed(2).replace(".", ",")}
-                    </p>
-                  </div>
-                </button>
-              ))}
+              ) : (
+                products.map((product) => (
+                  <button
+                    key={product.id}
+                    onClick={() => handleSelectProduct(product)}
+                    className={`w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left ${
+                      selectedProduct?.id === product.id
+                        ? "bg-foreground text-background border-foreground"
+                        : "bg-card-bg border-border hover:border-foreground"
+                    }`}
+                  >
+                    <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 bg-secondary">
+                      {product.imageUrl && (
+                        <ImageFrame
+                          src={product.imageUrl}
+                          alt={product.name}
+                          className="w-full h-full object-cover"
+                        />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium truncate">{product.name}</p>
+                      <p
+                        className={`text-sm ${selectedProduct?.id === product.id ? "opacity-70" : "text-muted"}`}
+                      >
+                        R$ {product.price.toFixed(2).replace(".", ",")}
+                      </p>
+                    </div>
+                  </button>
+                ))
+              )}
             </div>
           </div>
 
           {/* Product Editor */}
           <div className="lg:w-2/3">
             {selectedProduct ? (
-              <div className="bg-[var(--card-bg)] border border-[var(--border)] rounded-2xl p-6">
+              <div className="bg-card-bg border border-border rounded-2xl p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-xl font-bold">
                     {isEditing ? "Editar Produto" : "Detalhes do Produto"}
@@ -272,7 +296,7 @@ export default function AdminPanel() {
                       <>
                         <button
                           onClick={() => setIsEditing(true)}
-                          className="px-4 py-2 bg-[var(--foreground)] text-[var(--background)] rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
+                          className="px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
                         >
                           Editar
                         </button>
@@ -291,14 +315,14 @@ export default function AdminPanel() {
                             setIsEditing(false);
                             setEditForm({ ...selectedProduct });
                           }}
-                          className="px-4 py-2 border border-[var(--border)] rounded-lg text-sm font-medium hover:bg-[var(--secondary)] transition-colors"
+                          className="px-4 py-2 border border-border rounded-lg text-sm font-medium hover:bg-secondary transition-colors"
                         >
                           Cancelar
                         </button>
                         <button
                           onClick={handleSave}
                           disabled={isSaving}
-                          className="px-4 py-2 bg-[var(--foreground)] text-[var(--background)] rounded-lg text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+                          className="px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
                         >
                           {isSaving ? "Salvando..." : "Salvar"}
                         </button>
@@ -323,70 +347,103 @@ export default function AdminPanel() {
                   {/* Basic Info */}
                   <div className="grid gap-4 md:grid-cols-2">
                     <div>
-                      <label className="block text-sm font-medium mb-2">Nome</label>
+                      <label className="block text-sm font-medium mb-2">
+                        Nome
+                      </label>
                       <input
                         type="text"
                         value={editForm.name || ""}
-                        onChange={(e) => handleEditChange("name", e.target.value)}
+                        onChange={(e) =>
+                          handleEditChange("name", e.target.value)
+                        }
                         disabled={!isEditing}
-                        className="w-full px-4 py-2 rounded-lg border border-[var(--border)] bg-[var(--background)] disabled:opacity-50"
+                        className="w-full px-4 py-2 rounded-lg border border-border bg-background disabled:opacity-50"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-2">Categoria</label>
+                      <label className="block text-sm font-medium mb-2">
+                        Categoria
+                      </label>
                       <input
                         type="text"
                         value={editForm.category || ""}
-                        onChange={(e) => handleEditChange("category", e.target.value)}
+                        onChange={(e) =>
+                          handleEditChange("category", e.target.value)
+                        }
                         disabled={!isEditing}
-                        className="w-full px-4 py-2 rounded-lg border border-[var(--border)] bg-[var(--background)] disabled:opacity-50"
+                        className="w-full px-4 py-2 rounded-lg border border-border bg-background disabled:opacity-50"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">Descrição</label>
+                    <label className="block text-sm font-medium mb-2">
+                      Descrição
+                    </label>
                     <textarea
                       value={editForm.description || ""}
-                      onChange={(e) => handleEditChange("description", e.target.value)}
+                      onChange={(e) =>
+                        handleEditChange("description", e.target.value)
+                      }
                       disabled={!isEditing}
                       rows={3}
-                      className="w-full px-4 py-2 rounded-lg border border-[var(--border)] bg-[var(--background)] disabled:opacity-50 resize-none"
+                      className="w-full px-4 py-2 rounded-lg border border-border bg-background disabled:opacity-50 resize-none"
                     />
                   </div>
 
                   <div className="grid gap-4 md:grid-cols-3">
                     <div>
-                      <label className="block text-sm font-medium mb-2">Preço (R$)</label>
+                      <label className="block text-sm font-medium mb-2">
+                        Preço (R$)
+                      </label>
                       <input
                         type="number"
                         step="0.01"
                         value={editForm.price || 0}
-                        onChange={(e) => handleEditChange("price", parseFloat(e.target.value) || 0)}
+                        onChange={(e) =>
+                          handleEditChange(
+                            "price",
+                            parseFloat(e.target.value) || 0,
+                          )
+                        }
                         disabled={!isEditing}
-                        className="w-full px-4 py-2 rounded-lg border border-[var(--border)] bg-[var(--background)] disabled:opacity-50"
+                        className="w-full px-4 py-2 rounded-lg border border-border bg-background disabled:opacity-50"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-2">Preço Original (R$)</label>
+                      <label className="block text-sm font-medium mb-2">
+                        Preço Original (R$)
+                      </label>
                       <input
                         type="number"
                         step="0.01"
                         value={editForm.originalPrice || ""}
-                        onChange={(e) => handleEditChange("originalPrice", parseFloat(e.target.value) || undefined)}
+                        onChange={(e) =>
+                          handleEditChange(
+                            "originalPrice",
+                            parseFloat(e.target.value) || undefined,
+                          )
+                        }
                         disabled={!isEditing}
-                        className="w-full px-4 py-2 rounded-lg border border-[var(--border)] bg-[var(--background)] disabled:opacity-50"
+                        className="w-full px-4 py-2 rounded-lg border border-border bg-background disabled:opacity-50"
                         placeholder="Opcional"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium mb-2">Estoque</label>
+                      <label className="block text-sm font-medium mb-2">
+                        Estoque
+                      </label>
                       <input
                         type="number"
                         value={editForm.stock || 0}
-                        onChange={(e) => handleEditChange("stock", parseInt(e.target.value) || 0)}
+                        onChange={(e) =>
+                          handleEditChange(
+                            "stock",
+                            parseInt(e.target.value) || 0,
+                          )
+                        }
                         disabled={!isEditing}
-                        className="w-full px-4 py-2 rounded-lg border border-[var(--border)] bg-[var(--background)] disabled:opacity-50"
+                        className="w-full px-4 py-2 rounded-lg border border-border bg-background disabled:opacity-50"
                       />
                     </div>
                   </div>
@@ -396,7 +453,9 @@ export default function AdminPanel() {
                       type="checkbox"
                       id="featured"
                       checked={editForm.featured || false}
-                      onChange={(e) => handleEditChange("featured", e.target.checked)}
+                      onChange={(e) =>
+                        handleEditChange("featured", e.target.checked)
+                      }
                       disabled={!isEditing}
                       className="w-4 h-4"
                     />
@@ -410,14 +469,14 @@ export default function AdminPanel() {
                     <label className="block text-sm font-medium mb-2">
                       Imagens (URLs)
                     </label>
-                    <p className="text-xs text-[var(--muted)] mb-3">
+                    <p className="text-xs text-muted mb-3">
                       Cole URLs de imagens. A primeira será a imagem principal.
                     </p>
 
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
                       {editForm.images?.map((img, index) => (
                         <div key={index} className="relative group">
-                          <div className="aspect-square rounded-lg overflow-hidden bg-[var(--secondary)]">
+                          <div className="aspect-square rounded-lg overflow-hidden bg-secondary">
                             <ImageFrame
                               src={img}
                               alt={`Imagem ${index + 1}`}
@@ -433,7 +492,7 @@ export default function AdminPanel() {
                             </button>
                           )}
                           {index === 0 && (
-                            <span className="absolute bottom-1 left-1 px-2 py-0.5 bg-[var(--foreground)] text-[var(--background)] text-xs rounded">
+                            <span className="absolute bottom-1 left-1 px-2 py-0.5 bg-foreground text-background text-xs rounded">
                               Principal
                             </span>
                           )}
@@ -448,11 +507,11 @@ export default function AdminPanel() {
                           value={newImageUrl}
                           onChange={(e) => setNewImageUrl(e.target.value)}
                           placeholder="Cole a URL da imagem"
-                          className="flex-1 px-4 py-2 rounded-lg border border-[var(--border)] bg-[var(--background)]"
+                          className="flex-1 px-4 py-2 rounded-lg border border-border bg-background"
                         />
                         <button
                           onClick={handleAddImage}
-                          className="px-4 py-2 bg-[var(--secondary)] hover:bg-[var(--border)] rounded-lg transition-colors"
+                          className="px-4 py-2 bg-secondary hover:bg-border rounded-lg transition-colors"
                         >
                           Adicionar
                         </button>
@@ -462,12 +521,14 @@ export default function AdminPanel() {
 
                   {/* Sizes */}
                   <div>
-                    <label className="block text-sm font-medium mb-2">Tamanhos</label>
+                    <label className="block text-sm font-medium mb-2">
+                      Tamanhos
+                    </label>
                     <div className="flex flex-wrap gap-2 mb-3">
                       {editForm.sizes?.map((size, index) => (
                         <span
                           key={index}
-                          className="inline-flex items-center gap-1 px-3 py-1 bg-[var(--secondary)] rounded-full text-sm"
+                          className="inline-flex items-center gap-1 px-3 py-1 bg-secondary rounded-full text-sm"
                         >
                           {size}
                           {isEditing && (
@@ -488,11 +549,11 @@ export default function AdminPanel() {
                           value={newSize}
                           onChange={(e) => setNewSize(e.target.value)}
                           placeholder="Ex: P, M, G, GG"
-                          className="flex-1 px-4 py-2 rounded-lg border border-[var(--border)] bg-[var(--background)]"
+                          className="flex-1 px-4 py-2 rounded-lg border border-border bg-background"
                         />
                         <button
                           onClick={handleAddSize}
-                          className="px-4 py-2 bg-[var(--secondary)] hover:bg-[var(--border)] rounded-lg transition-colors"
+                          className="px-4 py-2 bg-secondary hover:bg-border rounded-lg transition-colors"
                         >
                           Adicionar
                         </button>
@@ -502,15 +563,17 @@ export default function AdminPanel() {
 
                   {/* Colors */}
                   <div>
-                    <label className="block text-sm font-medium mb-2">Cores</label>
+                    <label className="block text-sm font-medium mb-2">
+                      Cores
+                    </label>
                     <div className="flex flex-wrap gap-2 mb-3">
                       {editForm.colors?.map((color, index) => (
                         <span
                           key={index}
-                          className="inline-flex items-center gap-2 px-3 py-1 bg-[var(--secondary)] rounded-full text-sm"
+                          className="inline-flex items-center gap-2 px-3 py-1 bg-secondary rounded-full text-sm"
                         >
                           <span
-                            className="w-4 h-4 rounded-full border border-[var(--border)]"
+                            className="w-4 h-4 rounded-full border border-border"
                             style={{ backgroundColor: color.hex }}
                           />
                           {color.name}
@@ -530,19 +593,23 @@ export default function AdminPanel() {
                         <input
                           type="text"
                           value={newColor.name}
-                          onChange={(e) => setNewColor({ ...newColor, name: e.target.value })}
+                          onChange={(e) =>
+                            setNewColor({ ...newColor, name: e.target.value })
+                          }
                           placeholder="Nome da cor"
-                          className="flex-1 px-4 py-2 rounded-lg border border-[var(--border)] bg-[var(--background)]"
+                          className="flex-1 px-4 py-2 rounded-lg border border-border bg-background"
                         />
                         <input
                           type="color"
                           value={newColor.hex}
-                          onChange={(e) => setNewColor({ ...newColor, hex: e.target.value })}
-                          className="w-12 h-10 rounded-lg border border-[var(--border)] cursor-pointer"
+                          onChange={(e) =>
+                            setNewColor({ ...newColor, hex: e.target.value })
+                          }
+                          className="w-12 h-10 rounded-lg border border-border cursor-pointer"
                         />
                         <button
                           onClick={handleAddColor}
-                          className="px-4 py-2 bg-[var(--secondary)] hover:bg-[var(--border)] rounded-lg transition-colors"
+                          className="px-4 py-2 bg-secondary hover:bg-border rounded-lg transition-colors"
                         >
                           Adicionar
                         </button>
@@ -552,9 +619,9 @@ export default function AdminPanel() {
                 </div>
               </div>
             ) : (
-              <div className="bg-[var(--card-bg)] border border-[var(--border)] rounded-2xl p-12 text-center">
+              <div className="bg-card-bg border border-border rounded-2xl p-12 text-center">
                 <svg
-                  className="w-16 h-16 mx-auto text-[var(--muted)] mb-4"
+                  className="w-16 h-16 mx-auto text-muted mb-4"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -566,7 +633,7 @@ export default function AdminPanel() {
                     d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
                   />
                 </svg>
-                <p className="text-[var(--muted)]">
+                <p className="text-muted">
                   Selecione um produto para editar ou crie um novo
                 </p>
               </div>

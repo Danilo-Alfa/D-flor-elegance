@@ -32,30 +32,28 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[var(--background)] px-4">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2">
-            <div className="w-12 h-12 bg-[var(--foreground)] rounded-xl flex items-center justify-center">
-              <span className="text-[var(--background)] font-bold text-lg">LR</span>
+            <div className="w-12 h-12 bg-foreground rounded-xl flex items-center justify-center">
+              <span className="text-background font-bold text-lg">LR</span>
             </div>
           </Link>
-          <h1 className="text-2xl font-bold mt-4 text-[var(--foreground)]">
+          <h1 className="text-2xl font-bold mt-4 text-foreground">
             Painel Administrativo
           </h1>
-          <p className="text-[var(--muted)] mt-2">
-            Faça login para gerenciar sua loja
-          </p>
+          <p className="text-muted mt-2">Faça login para gerenciar sua loja</p>
         </div>
 
         {/* Login Form */}
-        <div className="bg-[var(--card-bg)] border border-[var(--border)] rounded-2xl p-8">
+        <div className="bg-card-bg border border-border rounded-2xl p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label
                 htmlFor="password"
-                className="block text-sm font-medium text-[var(--foreground)] mb-2"
+                className="block text-sm font-medium text-foreground mb-2"
               >
                 Senha de Administrador
               </label>
@@ -64,7 +62,7 @@ export default function AdminLogin() {
                 id="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-[var(--border)] bg-[var(--background)] text-[var(--foreground)] placeholder:text-[var(--muted)] focus:outline-none focus:ring-2 focus:ring-[var(--foreground)]/20 focus:border-[var(--foreground)]"
+                className="w-full px-4 py-3 rounded-xl border border-border bg-background text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-foreground/20 focus:border-foreground"
                 placeholder="Digite a senha"
                 required
               />
@@ -79,7 +77,7 @@ export default function AdminLogin() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full py-3 bg-[var(--foreground)] text-[var(--background)] rounded-xl font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 bg-foreground text-background rounded-xl font-semibold hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? "Entrando..." : "Entrar"}
             </button>
@@ -90,7 +88,7 @@ export default function AdminLogin() {
         <div className="text-center mt-6">
           <Link
             href="/"
-            className="text-[var(--muted)] hover:text-[var(--foreground)] transition-colors text-sm"
+            className="text-muted hover:text-foreground transition-colors text-sm"
           >
             ← Voltar para a loja
           </Link>

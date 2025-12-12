@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 
 // URLs da API PagSeguro
-const PAGSEGURO_API_URL = process.env.PAGSEGURO_SANDBOX === "true"
-  ? "https://sandbox.api.pagseguro.com"
-  : "https://api.pagseguro.com";
+const PAGSEGURO_API_URL =
+  process.env.PAGSEGURO_SANDBOX === "true"
+    ? "https://sandbox.api.pagseguro.com"
+    : "https://api.pagseguro.com";
 
 export async function POST(request: NextRequest) {
   try {
@@ -72,7 +73,10 @@ export async function POST(request: NextRequest) {
 
     if (updateError) {
       console.error("Erro ao atualizar pedido:", updateError);
-      return NextResponse.json({ error: "Erro ao atualizar pedido" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Erro ao atualizar pedido" },
+        { status: 500 },
+      );
     }
 
     // Se o pagamento foi aprovado, decrementar o estoque dos produtos
@@ -95,18 +99,23 @@ async function decrementStock(orderNumber: string) {
     // Buscar pedido com itens
     const { data: order, error: orderError } = await supabase
       .from("orders")
-      .select(`
+      .select(
+        `
         id,
         order_items (
           product_id,
           quantity
         )
-      `)
+      `,
+      )
       .eq("order_number", orderNumber)
       .single();
 
     if (orderError || !order) {
-      console.error("Erro ao buscar pedido para atualizar estoque:", orderError);
+      console.error(
+        "Erro ao buscar pedido para atualizar estoque:",
+        orderError,
+      );
       return;
     }
 
@@ -118,7 +127,10 @@ async function decrementStock(orderNumber: string) {
       });
 
       if (stockError) {
-        console.error(`Erro ao decrementar estoque do produto ${item.product_id}:`, stockError);
+        console.error(
+          `Erro ao decrementar estoque do produto ${item.product_id}:`,
+          stockError,
+        );
       }
     }
   } catch (error) {
@@ -137,12 +149,18 @@ export async function PUT(request: NextRequest) {
     const { orderNumber } = await request.json();
 
     if (!orderNumber) {
-      return NextResponse.json({ error: "orderNumber obrigatorio" }, { status: 400 });
+      return NextResponse.json(
+        { error: "orderNumber obrigatorio" },
+        { status: 400 },
+      );
     }
 
     const token = process.env.PAGSEGURO_TOKEN;
     if (!token) {
-      return NextResponse.json({ error: "PagSeguro nao configurado" }, { status: 500 });
+      return NextResponse.json(
+        { error: "PagSeguro nao configurado" },
+        { status: 500 },
+      );
     }
 
     // Buscar pedido no banco
@@ -153,7 +171,10 @@ export async function PUT(request: NextRequest) {
       .single();
 
     if (orderError || !order) {
-      return NextResponse.json({ error: "Pedido nao encontrado" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Pedido nao encontrado" },
+        { status: 404 },
+      );
     }
 
     // Se ja esta pago, retornar status
@@ -170,10 +191,10 @@ export async function PUT(request: NextRequest) {
         `${PAGSEGURO_API_URL}/orders/${order.pagseguro_order_id}`,
         {
           headers: {
-            "Authorization": `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
             "x-api-version": "4.0",
           },
-        }
+        },
       );
 
       if (response.ok) {

@@ -9,9 +9,10 @@ function generateOrderNumber(): string {
 }
 
 // URLs da API PagSeguro
-const PAGSEGURO_API_URL = process.env.PAGSEGURO_SANDBOX === "true"
-  ? "https://sandbox.api.pagseguro.com"
-  : "https://api.pagseguro.com";
+const PAGSEGURO_API_URL =
+  process.env.PAGSEGURO_SANDBOX === "true"
+    ? "https://sandbox.api.pagseguro.com"
+    : "https://api.pagseguro.com";
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,7 +24,7 @@ export async function POST(request: NextRequest) {
       console.error("PAGSEGURO_TOKEN nao configurado");
       return NextResponse.json(
         { error: "PagSeguro nao configurado" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -31,7 +32,7 @@ export async function POST(request: NextRequest) {
     const subtotal = items.reduce(
       (sum: number, item: { unit_price: number; quantity: number }) =>
         sum + item.unit_price * item.quantity,
-      0
+      0,
     );
     const shippingCost = shipping?.cost || 0;
     const total = subtotal + shippingCost;
@@ -75,7 +76,7 @@ export async function POST(request: NextRequest) {
       console.error("Erro ao criar pedido:", orderError);
       return NextResponse.json(
         { error: "Erro ao criar pedido" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -100,7 +101,7 @@ export async function POST(request: NextRequest) {
           total_price: item.price * item.quantity,
           selected_size: item.selectedSize || null,
           selected_color: item.selectedColor || null,
-        })
+        }),
       );
 
       const { error: itemsError } = await supabase
@@ -112,7 +113,7 @@ export async function POST(request: NextRequest) {
         await supabase.from("orders").delete().eq("id", order.id);
         return NextResponse.json(
           { error: "Erro ao criar itens do pedido" },
-          { status: 500 }
+          { status: 500 },
         );
       }
     }
@@ -124,7 +125,7 @@ export async function POST(request: NextRequest) {
         name: item.name.substring(0, 64),
         quantity: item.quantity,
         unit_amount: Math.round(item.price * 100), // Converter para centavos
-      })
+      }),
     );
 
     // Adicionar frete como item se houver
@@ -149,14 +150,16 @@ export async function POST(request: NextRequest) {
         name: payer.name || "Cliente",
         email: payer.email,
         tax_id: payer.cpf?.replace(/\D/g, "") || undefined,
-        phones: payer.phone?.area_code ? [
-          {
-            country: "55",
-            area: payer.phone.area_code,
-            number: payer.phone.number,
-            type: "MOBILE",
-          },
-        ] : undefined,
+        phones: payer.phone?.area_code
+          ? [
+              {
+                country: "55",
+                area: payer.phone.area_code,
+                number: payer.phone.number,
+                type: "MOBILE",
+              },
+            ]
+          : undefined,
       },
       items: pagseguroItems,
       // IMPORTANTE: Aceitar APENAS PIX
@@ -176,13 +179,16 @@ export async function POST(request: NextRequest) {
       checkoutBody.notification_urls = [`${baseUrl}/api/webhooks/pagseguro`];
     }
 
-    console.log("Criando checkout PagSeguro (PIX only):", JSON.stringify(checkoutBody, null, 2));
+    console.log(
+      "Criando checkout PagSeguro (PIX only):",
+      JSON.stringify(checkoutBody, null, 2),
+    );
 
     // Fazer requisicao para PagSeguro Checkout API
     const response = await fetch(`${PAGSEGURO_API_URL}/checkouts`, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
         "x-api-version": "4.0",
       },
@@ -200,10 +206,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error: "Erro ao criar checkout",
-          message: responseData.error_messages?.[0]?.description || "Erro desconhecido",
+          message:
+            responseData.error_messages?.[0]?.description ||
+            "Erro desconhecido",
           details: responseData,
         },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -211,7 +219,7 @@ export async function POST(request: NextRequest) {
 
     // Extrair link de pagamento
     const payLink = responseData.links?.find(
-      (link: { rel: string }) => link.rel === "PAY"
+      (link: { rel: string }) => link.rel === "PAY",
     );
 
     if (!payLink) {
@@ -219,7 +227,7 @@ export async function POST(request: NextRequest) {
       await supabase.from("orders").delete().eq("id", order.id);
       return NextResponse.json(
         { error: "Link de pagamento nao gerado" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -243,7 +251,7 @@ export async function POST(request: NextRequest) {
     console.error("Erro ao criar checkout PagSeguro:", error);
     return NextResponse.json(
       { error: "Erro ao processar pagamento" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

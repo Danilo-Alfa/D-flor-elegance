@@ -1,16 +1,16 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { NextRequest, NextResponse } from "next/server";
+import { supabase } from "@/lib/supabase";
 
 // GET - Buscar todos os produtos
 export async function GET() {
   try {
     const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .order('created_at', { ascending: false });
+      .from("products")
+      .select("*")
+      .order("created_at", { ascending: false });
 
     if (error) {
-      console.error('Erro ao buscar produtos:', error);
+      console.error("Erro ao buscar produtos:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
@@ -34,8 +34,11 @@ export async function GET() {
 
     return NextResponse.json(products);
   } catch (error) {
-    console.error('Erro ao buscar produtos:', error);
-    return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
+    console.error("Erro ao buscar produtos:", error);
+    return NextResponse.json(
+      { error: "Erro interno do servidor" },
+      { status: 500 },
+    );
   }
 }
 
@@ -45,7 +48,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     const { data, error } = await supabase
-      .from('products')
+      .from("products")
       .insert({
         name: body.name,
         description: body.description,
@@ -63,7 +66,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
-      console.error('Erro ao criar produto:', error);
+      console.error("Erro ao criar produto:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
@@ -86,7 +89,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(product, { status: 201 });
   } catch (error) {
-    console.error('Erro ao criar produto:', error);
-    return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
+    console.error("Erro ao criar produto:", error);
+    return NextResponse.json(
+      { error: "Erro interno do servidor" },
+      { status: 500 },
+    );
   }
 }

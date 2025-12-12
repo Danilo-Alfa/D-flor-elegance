@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     if (!signature) {
       return NextResponse.json(
         { error: "Missing stripe-signature header" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -26,10 +26,7 @@ export async function POST(request: NextRequest) {
       event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
     } catch (err) {
       console.error("Webhook signature verification failed:", err);
-      return NextResponse.json(
-        { error: "Invalid signature" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
     }
 
     console.log("Stripe webhook event:", event.type);
@@ -70,14 +67,17 @@ export async function POST(request: NextRequest) {
             .from("orders")
             .update({
               status: "payment_failed",
-              failure_reason: paymentIntent.last_payment_error?.message || "Pagamento falhou",
+              failure_reason:
+                paymentIntent.last_payment_error?.message || "Pagamento falhou",
             })
             .eq("order_number", orderNumber);
 
           if (error) {
             console.error("Erro ao atualizar pedido:", error);
           } else {
-            console.log(`Pedido ${orderNumber} marcado como falha no pagamento`);
+            console.log(
+              `Pedido ${orderNumber} marcado como falha no pagamento`,
+            );
           }
         }
         break;
@@ -151,7 +151,9 @@ export async function POST(request: NextRequest) {
             if (error) {
               console.error("Erro ao atualizar pedido:", error);
             } else {
-              console.log(`Pedido ${orderNumber} marcado como pago via Checkout`);
+              console.log(
+                `Pedido ${orderNumber} marcado como pago via Checkout`,
+              );
             }
           } else if (session.payment_status === "unpaid") {
             // Para PIX, o pagamento pode vir depois
@@ -217,7 +219,7 @@ export async function POST(request: NextRequest) {
     console.error("Erro no webhook:", error);
     return NextResponse.json(
       { error: "Webhook handler failed" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

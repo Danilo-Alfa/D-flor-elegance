@@ -46,7 +46,7 @@ export function Header() {
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
           isScrolled || isMobileMenuOpen
-            ? "bg-[var(--background)] backdrop-blur-md shadow-sm py-3"
+            ? "bg-background backdrop-blur-md shadow-sm py-3"
             : "bg-transparent py-4"
         }`}
       >
@@ -56,9 +56,9 @@ export function Header() {
             <Link href="/loja" className="flex items-center gap-2">
               <div className="flex flex-col items-center">
                 <span className="font-display text-2xl md:text-3xl tracking-wide">
-                  D' flor
+                  D&apos; flor
                 </span>
-                <span className="font-body text-[10px] md:text-xs tracking-[0.4em] uppercase text-[var(--muted-foreground)] -mt-1">
+                <span className="font-body text-[10px] md:text-xs tracking-[0.4em] uppercase text-muted-foreground -mt-1">
                   elegance
                 </span>
               </div>
@@ -76,7 +76,7 @@ export function Header() {
                 <Link
                   key={item.label}
                   href={item.href}
-                  className="font-body text-sm tracking-widest uppercase text-[var(--foreground)]/80 hover:text-[var(--foreground)] transition-colors duration-300 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-[1px] after:bg-[var(--primary)] hover:after:w-full after:transition-all after:duration-300"
+                  className="font-body text-sm tracking-widest uppercase text-foreground/80 hover:text-foreground transition-colors duration-300 relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-px after:bg-primary hover:after:w-full after:transition-all after:duration-300"
                 >
                   {item.label}
                 </Link>
@@ -89,7 +89,7 @@ export function Header() {
               <div className="relative">
                 <button
                   onClick={() => setIsSearchOpen(!isSearchOpen)}
-                  className="p-2 rounded-lg bg-[var(--background)]/80 backdrop-blur-sm shadow-sm hover:text-[var(--primary)] transition-colors duration-300"
+                  className="p-2 rounded-lg bg-background/80 backdrop-blur-sm shadow-sm hover:text-primary transition-colors duration-300"
                   aria-label="Buscar"
                 >
                   <svg
@@ -110,7 +110,7 @@ export function Header() {
 
                 {/* Search Dropdown */}
                 {isSearchOpen && (
-                  <div className="absolute right-0 top-full mt-2 w-72 bg-[var(--background)] border border-[var(--border)] rounded-xl shadow-lg p-3 z-50">
+                  <div className="absolute right-0 top-full mt-2 w-72 bg-background border border-border rounded-xl shadow-lg p-3 z-50">
                     <form onSubmit={handleSearch} className="flex gap-2">
                       <div className="relative flex-1">
                         <input
@@ -118,24 +118,32 @@ export function Header() {
                           value={localSearch}
                           onChange={(e) => setLocalSearch(e.target.value)}
                           placeholder="Buscar produtos..."
-                          className="w-full px-4 py-2 pr-8 rounded-lg border border-[var(--border)] bg-[var(--secondary)] text-sm focus:outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                          className="w-full px-4 py-2 pr-8 rounded-lg border border-border bg-secondary text-sm focus:outline-none focus:ring-2 focus:ring-primary"
                           autoFocus
                         />
                         {localSearch && (
                           <button
                             type="button"
                             onClick={handleClearSearch}
-                            className="absolute right-2 top-1/2 -translate-y-1/2 text-[var(--muted)] hover:text-[var(--foreground)]"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-muted hover:text-foreground"
                           >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                              <path d="M18 6 6 18M6 6l12 12"/>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                            >
+                              <path d="M18 6 6 18M6 6l12 12" />
                             </svg>
                           </button>
                         )}
                       </div>
                       <button
                         type="submit"
-                        className="px-4 py-2 bg-[var(--foreground)] text-[var(--background)] rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
+                        className="px-4 py-2 bg-foreground text-background rounded-lg text-sm font-medium hover:opacity-90 transition-opacity"
                       >
                         Buscar
                       </button>
@@ -148,7 +156,7 @@ export function Header() {
               {!authLoading && (
                 <Link
                   href={user ? "/minha-conta" : "/login"}
-                  className="p-2 hover:text-[var(--primary)] transition-colors duration-300 hidden md:flex items-center gap-2"
+                  className="p-2 hover:text-primary transition-colors duration-300 hidden md:flex items-center gap-2"
                   aria-label={user ? "Minha Conta" : "Entrar"}
                 >
                   <svg
@@ -166,7 +174,9 @@ export function Header() {
                     <path d="M20 21a8 8 0 0 0-16 0" />
                   </svg>
                   {!user && (
-                    <span className="text-xs font-medium tracking-wide">Entrar</span>
+                    <span className="text-xs font-medium tracking-wide">
+                      Entrar
+                    </span>
                   )}
                 </Link>
               )}
@@ -174,7 +184,7 @@ export function Header() {
               {/* Cart */}
               <button
                 onClick={() => setIsCartOpen(true)}
-                className="relative p-2 rounded-lg bg-[var(--background)]/80 backdrop-blur-sm shadow-sm hover:text-[var(--primary)] transition-colors duration-300"
+                className="relative p-2 rounded-lg bg-background/80 backdrop-blur-sm shadow-sm hover:text-primary transition-colors duration-300"
                 aria-label="Sacola"
               >
                 <svg
@@ -193,7 +203,7 @@ export function Header() {
                   <path d="M16 10a4 4 0 0 1-8 0" />
                 </svg>
                 {cartCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-[var(--primary)] text-[var(--background)] text-xs rounded-full flex items-center justify-center font-medium">
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-primary text-background text-xs rounded-full flex items-center justify-center font-medium">
                     {cartCount}
                   </span>
                 )}
@@ -202,7 +212,7 @@ export function Header() {
               {/* Mobile Menu Button */}
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="lg:hidden p-2 rounded-lg bg-[var(--background)]/80 backdrop-blur-sm shadow-sm"
+                className="lg:hidden p-2 rounded-lg bg-background/80 backdrop-blur-sm shadow-sm"
                 aria-label="Menu"
               >
                 {isMobileMenuOpen ? (
@@ -247,7 +257,7 @@ export function Header() {
               isMobileMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
             }`}
           >
-            <nav className="flex flex-col gap-4 py-4 border-t border-[var(--border)] mt-4">
+            <nav className="flex flex-col gap-4 py-4 border-t border-border mt-4">
               {[
                 { href: "/", label: "Início" },
                 { href: "/#collections", label: "Coleções" },
@@ -258,7 +268,7 @@ export function Header() {
                 <Link
                   key={item.label}
                   href={item.href}
-                  className="font-body text-sm tracking-widest uppercase text-[var(--foreground)]/80 hover:text-[var(--foreground)] transition-colors duration-300 py-2"
+                  className="font-body text-sm tracking-widest uppercase text-foreground/80 hover:text-foreground transition-colors duration-300 py-2"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   {item.label}
@@ -268,7 +278,7 @@ export function Header() {
               {!authLoading && (
                 <Link
                   href={user ? "/minha-conta" : "/login"}
-                  className="font-body text-sm tracking-widest uppercase text-[var(--foreground)]/80 hover:text-[var(--foreground)] transition-colors duration-300 py-2 flex items-center gap-2"
+                  className="font-body text-sm tracking-widest uppercase text-foreground/80 hover:text-foreground transition-colors duration-300 py-2 flex items-center gap-2"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   <svg

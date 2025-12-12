@@ -16,14 +16,20 @@ export async function POST(request: NextRequest) {
 
     if (!paymentId) {
       console.error("Webhook sem ID de pagamento");
-      return NextResponse.json({ error: "ID de pagamento não fornecido" }, { status: 400 });
+      return NextResponse.json(
+        { error: "ID de pagamento não fornecido" },
+        { status: 400 },
+      );
     }
 
     const accessToken = process.env.MERCADOPAGO_ACCESS_TOKEN;
 
     if (!accessToken) {
       console.error("MERCADOPAGO_ACCESS_TOKEN não configurado");
-      return NextResponse.json({ error: "Configuração inválida" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Configuração inválida" },
+        { status: 500 },
+      );
     }
 
     // Buscar detalhes do pagamento no Mercado Pago
@@ -33,14 +39,20 @@ export async function POST(request: NextRequest) {
 
     if (!paymentData) {
       console.error("Pagamento não encontrado:", paymentId);
-      return NextResponse.json({ error: "Pagamento não encontrado" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Pagamento não encontrado" },
+        { status: 404 },
+      );
     }
 
     const orderNumber = paymentData.external_reference;
 
     if (!orderNumber) {
       console.error("Pedido não encontrado na referência externa");
-      return NextResponse.json({ error: "Referência externa não encontrada" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Referência externa não encontrada" },
+        { status: 400 },
+      );
     }
 
     // Mapear status do Mercado Pago para status do pedido
@@ -82,7 +94,10 @@ export async function POST(request: NextRequest) {
 
     if (updateError) {
       console.error("Erro ao atualizar pedido:", updateError);
-      return NextResponse.json({ error: "Erro ao atualizar pedido" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Erro ao atualizar pedido" },
+        { status: 500 },
+      );
     }
 
     // Se o pagamento foi aprovado, decrementar o estoque dos produtos
@@ -105,18 +120,23 @@ async function decrementStock(orderNumber: string) {
     // Buscar pedido com itens
     const { data: order, error: orderError } = await supabase
       .from("orders")
-      .select(`
+      .select(
+        `
         id,
         order_items (
           product_id,
           quantity
         )
-      `)
+      `,
+      )
       .eq("order_number", orderNumber)
       .single();
 
     if (orderError || !order) {
-      console.error("Erro ao buscar pedido para atualizar estoque:", orderError);
+      console.error(
+        "Erro ao buscar pedido para atualizar estoque:",
+        orderError,
+      );
       return;
     }
 
@@ -128,7 +148,10 @@ async function decrementStock(orderNumber: string) {
       });
 
       if (stockError) {
-        console.error(`Erro ao decrementar estoque do produto ${item.product_id}:`, stockError);
+        console.error(
+          `Erro ao decrementar estoque do produto ${item.product_id}:`,
+          stockError,
+        );
       }
     }
   } catch (error) {

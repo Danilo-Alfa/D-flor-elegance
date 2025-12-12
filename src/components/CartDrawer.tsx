@@ -48,14 +48,14 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
       {/* Drawer Content */}
       <div
-        className={`absolute right-0 top-0 h-full w-full max-w-md bg-[var(--background)] shadow-2xl modal-content ${isClosing ? "modal-closing" : ""}`}
+        className={`absolute right-0 top-0 h-full w-full max-w-md bg-background shadow-2xl modal-content ${isClosing ? "modal-closing" : ""}`}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-[var(--border)]">
+        <div className="flex items-center justify-between p-4 border-b border-border">
           <h2 className="text-xl font-bold">Carrinho</h2>
           <button
             onClick={handleClose}
-            className="p-2 rounded-lg hover:bg-[var(--secondary)] transition-colors"
+            className="p-2 rounded-lg hover:bg-secondary transition-colors"
           >
             <svg
               className="w-6 h-6"
@@ -74,11 +74,14 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         </div>
 
         {/* Cart Items */}
-        <div className="flex-1 overflow-y-auto p-4" style={{ maxHeight: "calc(100vh - 200px)" }}>
+        <div
+          className="flex-1 overflow-y-auto p-4"
+          style={{ maxHeight: "calc(100vh - 200px)" }}
+        >
           {cart.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-64 text-center">
               <svg
-                className="w-16 h-16 text-[var(--muted)] mb-4"
+                className="w-16 h-16 text-muted mb-4"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -90,10 +93,10 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
                 />
               </svg>
-              <p className="text-[var(--muted)]">Seu carrinho está vazio</p>
+              <p className="text-muted">Seu carrinho está vazio</p>
               <button
                 onClick={handleClose}
-                className="mt-4 px-6 py-2 bg-[var(--foreground)] text-[var(--background)] rounded-lg font-medium hover:opacity-90 transition-opacity"
+                className="mt-4 px-6 py-2 bg-foreground text-background rounded-lg font-medium hover:opacity-90 transition-opacity"
               >
                 Continuar Comprando
               </button>
@@ -103,10 +106,10 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               {cart.map((item, index) => (
                 <div
                   key={`${item.product.id}-${item.selectedSize}-${item.selectedColor.hex}-${index}`}
-                  className="flex gap-4 p-3 bg-[var(--card-bg)] border border-[var(--border)] rounded-xl"
+                  className="flex gap-4 p-3 bg-card-bg border border-border rounded-xl"
                 >
                   {/* Image */}
-                  <div className="w-20 h-24 rounded-lg overflow-hidden flex-shrink-0">
+                  <div className="w-20 h-24 rounded-lg overflow-hidden shrink-0">
                     <ImageFrame
                       src={item.product.imageUrl}
                       alt={item.product.name}
@@ -119,8 +122,9 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                     <h3 className="font-medium text-sm line-clamp-1">
                       {item.product.name}
                     </h3>
-                    <p className="text-xs text-[var(--muted)] mt-1">
-                      Tamanho: {item.selectedSize} | Cor: {item.selectedColor.name}
+                    <p className="text-xs text-muted mt-1">
+                      Tamanho: {item.selectedSize} | Cor:{" "}
+                      {item.selectedColor.name}
                     </p>
                     <p className="font-bold mt-2">
                       R$ {item.product.price.toFixed(2).replace(".", ",")}
@@ -132,19 +136,21 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                         onClick={() =>
                           updateCartQuantity(
                             item.product.id,
-                            Math.max(1, item.quantity - 1)
+                            Math.max(1, item.quantity - 1),
                           )
                         }
-                        className="w-7 h-7 rounded border border-[var(--border)] flex items-center justify-center hover:bg-[var(--secondary)] transition-colors text-sm"
+                        className="w-7 h-7 rounded border border-border flex items-center justify-center hover:bg-secondary transition-colors text-sm"
                       >
                         -
                       </button>
-                      <span className="w-8 text-center text-sm">{item.quantity}</span>
+                      <span className="w-8 text-center text-sm">
+                        {item.quantity}
+                      </span>
                       <button
                         onClick={() =>
                           updateCartQuantity(item.product.id, item.quantity + 1)
                         }
-                        className="w-7 h-7 rounded border border-[var(--border)] flex items-center justify-center hover:bg-[var(--secondary)] transition-colors text-sm"
+                        className="w-7 h-7 rounded border border-border flex items-center justify-center hover:bg-secondary transition-colors text-sm"
                       >
                         +
                       </button>
@@ -154,7 +160,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   {/* Remove Button */}
                   <button
                     onClick={() => removeFromCart(item.product.id)}
-                    className="p-1 text-[var(--muted)] hover:text-[var(--error)] transition-colors"
+                    className="p-1 text-muted hover:text-error transition-colors"
                   >
                     <svg
                       className="w-5 h-5"
@@ -178,9 +184,9 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
         {/* Footer */}
         {cart.length > 0 && (
-          <div className="absolute bottom-0 left-0 right-0 p-4 bg-[var(--background)] border-t border-[var(--border)]">
+          <div className="absolute bottom-0 left-0 right-0 p-4 bg-background border-t border-border">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-[var(--muted)]">Subtotal</span>
+              <span className="text-muted">Subtotal</span>
               <span className="text-xl font-bold">
                 R$ {cartTotal.toFixed(2).replace(".", ",")}
               </span>
@@ -188,13 +194,13 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             <Link
               href="/checkout"
               onClick={handleClose}
-              className="block w-full py-3 bg-[var(--foreground)] text-[var(--background)] text-center rounded-xl font-semibold hover:opacity-90 transition-opacity"
+              className="block w-full py-3 bg-foreground text-background text-center rounded-xl font-semibold hover:opacity-90 transition-opacity"
             >
               Finalizar Compra
             </Link>
             <button
               onClick={handleClose}
-              className="w-full py-3 mt-2 text-[var(--muted)] hover:text-[var(--foreground)] transition-colors text-sm"
+              className="w-full py-3 mt-2 text-muted hover:text-foreground transition-colors text-sm"
             >
               Continuar Comprando
             </button>

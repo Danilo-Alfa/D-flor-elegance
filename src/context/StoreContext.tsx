@@ -1,6 +1,13 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+  useCallback,
+} from "react";
 import { Product, CartItem, User } from "@/types";
 
 interface StoreContextType {
@@ -17,7 +24,9 @@ interface StoreContextType {
   login: (password: string) => Promise<boolean>;
   logout: () => void;
   updateProduct: (product: Product) => Promise<void>;
-  createProduct: (product: Omit<Product, "id" | "createdAt" | "updatedAt">) => Promise<void>;
+  createProduct: (
+    product: Omit<Product, "id" | "createdAt" | "updatedAt">,
+  ) => Promise<void>;
   deleteProduct: (productId: string) => Promise<void>;
   refreshProducts: () => Promise<void>;
   isLoading: boolean;
@@ -30,7 +39,10 @@ const StoreContext = createContext<StoreContextType | undefined>(undefined);
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [products, setProducts] = useState<Product[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [user, setUser] = useState<User>({ isAdmin: false, isAuthenticated: false });
+  const [user, setUser] = useState<User>({
+    isAdmin: false,
+    isAuthenticated: false,
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -82,7 +94,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         (i) =>
           i.product.id === item.product.id &&
           i.selectedSize === item.selectedSize &&
-          i.selectedColor.hex === item.selectedColor.hex
+          i.selectedColor.hex === item.selectedColor.hex,
       );
 
       if (existingIndex > -1) {
@@ -102,8 +114,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const updateCartQuantity = (productId: string, quantity: number) => {
     setCart((prev) =>
       prev.map((item) =>
-        item.product.id === productId ? { ...item, quantity } : item
-      )
+        item.product.id === productId ? { ...item, quantity } : item,
+      ),
     );
   };
 
@@ -113,7 +125,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const cartTotal = cart.reduce(
     (total, item) => total + item.product.price * item.quantity,
-    0
+    0,
   );
 
   const cartCount = cart.reduce((count, item) => count + item.quantity, 0);
@@ -153,9 +165,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
       if (response.ok) {
         const data = await response.json();
-        setProducts((prev) =>
-          prev.map((p) => (p.id === data.id ? data : p))
-        );
+        setProducts((prev) => prev.map((p) => (p.id === data.id ? data : p)));
       } else {
         throw new Error("Erro ao atualizar produto");
       }
@@ -166,7 +176,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   };
 
   // Criar novo produto no backend
-  const createProduct = async (newProduct: Omit<Product, "id" | "createdAt" | "updatedAt">) => {
+  const createProduct = async (
+    newProduct: Omit<Product, "id" | "createdAt" | "updatedAt">,
+  ) => {
     try {
       const response = await fetch("/api/products", {
         method: "POST",

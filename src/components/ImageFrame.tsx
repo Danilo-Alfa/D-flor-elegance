@@ -9,23 +9,29 @@ interface ImageFrameProps {
   style?: React.CSSProperties;
 }
 
-export function ImageFrame({ src, alt, className = "", style }: ImageFrameProps) {
+export function ImageFrame({
+  src,
+  alt,
+  className = "",
+  style,
+}: ImageFrameProps) {
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
 
   // Check if the src is a direct image URL or needs iframe
-  const isDirectImage = src.match(/\.(jpg|jpeg|png|gif|webp|svg|avif)(\?.*)?$/i) ||
-                        src.includes("unsplash.com") ||
-                        src.includes("cloudinary.com") ||
-                        src.includes("imgur.com") ||
-                        src.includes("pinimg.com") ||
-                        src.includes("pexels.com") ||
-                        src.includes("pixabay.com");
+  const isDirectImage =
+    src.match(/\.(jpg|jpeg|png|gif|webp|svg|avif)(\?.*)?$/i) ||
+    src.includes("unsplash.com") ||
+    src.includes("cloudinary.com") ||
+    src.includes("imgur.com") ||
+    src.includes("pinimg.com") ||
+    src.includes("pexels.com") ||
+    src.includes("pixabay.com");
 
   if (error) {
     return (
       <div
-        className={`flex items-center justify-center bg-[var(--secondary)] text-[var(--muted)] ${className}`}
+        className={`flex items-center justify-center bg-secondary text-muted ${className}`}
         style={style}
       >
         <div className="text-center p-4">
@@ -52,7 +58,7 @@ export function ImageFrame({ src, alt, className = "", style }: ImageFrameProps)
     return (
       <div className={`relative ${className}`} style={style}>
         {!loaded && (
-          <div className="absolute inset-0 bg-[var(--secondary)] animate-pulse" />
+          <div className="absolute inset-0 bg-secondary animate-pulse" />
         )}
         <img
           src={src}
@@ -70,7 +76,7 @@ export function ImageFrame({ src, alt, className = "", style }: ImageFrameProps)
   return (
     <div className={`image-frame relative ${className}`} style={style}>
       {!loaded && (
-        <div className="absolute inset-0 bg-[var(--secondary)] animate-pulse" />
+        <div className="absolute inset-0 bg-secondary animate-pulse" />
       )}
       <iframe
         src={src}

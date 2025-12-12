@@ -1,25 +1,28 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { NextRequest, NextResponse } from "next/server";
+import { supabase } from "@/lib/supabase";
 
 // GET - Buscar produto por ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
 
     const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .eq('id', id)
+      .from("products")
+      .select("*")
+      .eq("id", id)
       .single();
 
     if (error) {
-      if (error.code === 'PGRST116') {
-        return NextResponse.json({ error: 'Produto não encontrado' }, { status: 404 });
+      if (error.code === "PGRST116") {
+        return NextResponse.json(
+          { error: "Produto não encontrado" },
+          { status: 404 },
+        );
       }
-      console.error('Erro ao buscar produto:', error);
+      console.error("Erro ao buscar produto:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
@@ -42,22 +45,25 @@ export async function GET(
 
     return NextResponse.json(product);
   } catch (error) {
-    console.error('Erro ao buscar produto:', error);
-    return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
+    console.error("Erro ao buscar produto:", error);
+    return NextResponse.json(
+      { error: "Erro interno do servidor" },
+      { status: 500 },
+    );
   }
 }
 
 // PUT - Atualizar produto
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
     const body = await request.json();
 
     const { data, error } = await supabase
-      .from('products')
+      .from("products")
       .update({
         name: body.name,
         description: body.description,
@@ -72,15 +78,18 @@ export async function PUT(
         featured: body.featured,
         updated_at: new Date().toISOString(),
       })
-      .eq('id', id)
+      .eq("id", id)
       .select()
       .single();
 
     if (error) {
-      if (error.code === 'PGRST116') {
-        return NextResponse.json({ error: 'Produto não encontrado' }, { status: 404 });
+      if (error.code === "PGRST116") {
+        return NextResponse.json(
+          { error: "Produto não encontrado" },
+          { status: 404 },
+        );
       }
-      console.error('Erro ao atualizar produto:', error);
+      console.error("Erro ao atualizar produto:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
@@ -103,32 +112,35 @@ export async function PUT(
 
     return NextResponse.json(product);
   } catch (error) {
-    console.error('Erro ao atualizar produto:', error);
-    return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
+    console.error("Erro ao atualizar produto:", error);
+    return NextResponse.json(
+      { error: "Erro interno do servidor" },
+      { status: 500 },
+    );
   }
 }
 
 // DELETE - Deletar produto
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
 
-    const { error } = await supabase
-      .from('products')
-      .delete()
-      .eq('id', id);
+    const { error } = await supabase.from("products").delete().eq("id", id);
 
     if (error) {
-      console.error('Erro ao deletar produto:', error);
+      console.error("Erro ao deletar produto:", error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ message: 'Produto deletado com sucesso' });
+    return NextResponse.json({ message: "Produto deletado com sucesso" });
   } catch (error) {
-    console.error('Erro ao deletar produto:', error);
-    return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
+    console.error("Erro ao deletar produto:", error);
+    return NextResponse.json(
+      { error: "Erro interno do servidor" },
+      { status: 500 },
+    );
   }
 }

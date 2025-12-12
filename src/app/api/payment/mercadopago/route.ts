@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     if (!process.env.MERCADOPAGO_ACCESS_TOKEN) {
       return NextResponse.json(
         { error: "Mercado Pago nao configurado" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
     const subtotal = items.reduce(
       (sum: number, item: { unit_price: number; quantity: number }) =>
         sum + item.unit_price * item.quantity,
-      0
+      0,
     );
     const shippingCost = shipping?.cost || 0;
     const total = subtotal + shippingCost;
@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
       console.error("Erro ao criar pedido:", orderError);
       return NextResponse.json(
         { error: "Erro ao criar pedido" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
           total_price: item.price * item.quantity,
           selected_size: item.selectedSize || null,
           selected_color: item.selectedColor || null,
-        })
+        }),
       );
 
       const { error: itemsError } = await supabase
@@ -118,7 +118,7 @@ export async function POST(request: NextRequest) {
         await supabase.from("orders").delete().eq("id", order.id);
         return NextResponse.json(
           { error: "Erro ao criar itens do pedido" },
-          { status: 500 }
+          { status: 500 },
         );
       }
     }
@@ -143,7 +143,7 @@ export async function POST(request: NextRequest) {
         currency_id: "BRL",
         picture_url: item.image_url || undefined,
         category_id: item.category || "others", // Categoria do item
-      })
+      }),
     );
 
     // Adicionar frete como item separado se houver
@@ -217,7 +217,9 @@ export async function POST(request: NextRequest) {
       // Expiracao (24 horas)
       expires: true,
       expiration_date_from: new Date().toISOString(),
-      expiration_date_to: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+      expiration_date_to: new Date(
+        Date.now() + 24 * 60 * 60 * 1000,
+      ).toISOString(),
 
       // Metadata adicional
       metadata: {
@@ -232,7 +234,10 @@ export async function POST(request: NextRequest) {
       preferenceBody.notification_url = `${baseUrl}/api/webhooks/mercadopago`;
     }
 
-    console.log("Criando preferencia MP:", JSON.stringify(preferenceBody, null, 2));
+    console.log(
+      "Criando preferencia MP:",
+      JSON.stringify(preferenceBody, null, 2),
+    );
 
     // Criar preferencia
     let mpPreference;
@@ -262,7 +267,7 @@ export async function POST(request: NextRequest) {
           message: errorMessage,
           details: errorDetails,
         },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -271,11 +276,16 @@ export async function POST(request: NextRequest) {
       await supabase.from("orders").delete().eq("id", order.id);
       return NextResponse.json(
         { error: "Erro ao criar preferencia de pagamento" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
-    console.log("Preferencia criada:", mpPreference.id, "para pedido:", orderNumber);
+    console.log(
+      "Preferencia criada:",
+      mpPreference.id,
+      "para pedido:",
+      orderNumber,
+    );
 
     // Verificar se estamos em modo sandbox (configuravel via env)
     // Como APP_USR- e usado tanto em teste quanto producao, usamos uma variavel
@@ -304,7 +314,7 @@ export async function POST(request: NextRequest) {
     console.error("Erro ao criar preferencia:", error);
     return NextResponse.json(
       { error: "Erro ao processar pagamento" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

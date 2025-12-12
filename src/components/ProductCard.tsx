@@ -28,7 +28,7 @@ export function ProductCard({ product, onClick }: ProductCardProps) {
     const rotateY = ((x - centerX) / centerX) * 10;
 
     setTransform(
-      `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`
+      `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`,
     );
   };
 
@@ -42,7 +42,9 @@ export function ProductCard({ product, onClick }: ProductCardProps) {
   };
 
   const discount = product.originalPrice
-    ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+    ? Math.round(
+        ((product.originalPrice - product.price) / product.originalPrice) * 100,
+      )
     : 0;
 
   return (
@@ -52,7 +54,7 @@ export function ProductCard({ product, onClick }: ProductCardProps) {
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       onMouseEnter={handleMouseEnter}
-      className="relative cursor-pointer rounded-xl overflow-hidden bg-[var(--card-bg)] border border-[var(--border)] shadow-sm transition-all duration-300 ease-out"
+      className="relative cursor-pointer rounded-xl overflow-hidden bg-card-bg border border-border shadow-sm transition-all duration-300 ease-out"
       style={{
         transform: transform,
         transformStyle: "preserve-3d",
@@ -60,7 +62,7 @@ export function ProductCard({ product, onClick }: ProductCardProps) {
     >
       {/* Discount Badge */}
       {discount > 0 && product.stock > 0 && (
-        <div className="absolute top-3 left-3 z-10 bg-[var(--foreground)] text-[var(--background)] px-2 py-1 rounded-md text-xs font-semibold">
+        <div className="absolute top-3 left-3 z-10 bg-foreground text-background px-2 py-1 rounded-md text-xs font-semibold">
           -{discount}%
         </div>
       )}
@@ -73,7 +75,7 @@ export function ProductCard({ product, onClick }: ProductCardProps) {
       )}
 
       {/* Image Container */}
-      <div className="relative aspect-[3/4] overflow-hidden bg-[var(--secondary)]">
+      <div className="relative aspect-3/4 overflow-hidden bg-secondary">
         <ImageFrame
           src={product.imageUrl}
           alt={product.name}
@@ -87,7 +89,7 @@ export function ProductCard({ product, onClick }: ProductCardProps) {
 
         {/* Hover Overlay */}
         <div
-          className="absolute inset-0 bg-[var(--foreground)] transition-opacity duration-300 flex items-center justify-center"
+          className="absolute inset-0 bg-foreground transition-opacity duration-300 flex items-center justify-center"
           style={{ opacity: isHovering ? 0.05 : 0 }}
         />
       </div>
@@ -99,18 +101,18 @@ export function ProductCard({ product, onClick }: ProductCardProps) {
           transform: isHovering ? "translateZ(20px)" : "translateZ(0)",
         }}
       >
-        <p className="text-xs text-[var(--muted)] uppercase tracking-wider mb-1">
+        <p className="text-xs text-muted uppercase tracking-wider mb-1">
           {product.category}
         </p>
-        <h3 className="font-medium text-[var(--foreground)] mb-2 line-clamp-1">
+        <h3 className="font-medium text-foreground mb-2 line-clamp-1">
           {product.name}
         </h3>
         <div className="flex items-center gap-2">
-          <span className="font-bold text-lg text-[var(--foreground)]">
+          <span className="font-bold text-lg text-foreground">
             R$ {product.price.toFixed(2).replace(".", ",")}
           </span>
           {product.originalPrice && (
-            <span className="text-sm text-[var(--muted)] line-through">
+            <span className="text-sm text-muted line-through">
               R$ {product.originalPrice.toFixed(2).replace(".", ",")}
             </span>
           )}
@@ -121,13 +123,13 @@ export function ProductCard({ product, onClick }: ProductCardProps) {
           {product.colors.slice(0, 4).map((color) => (
             <div
               key={color.hex}
-              className="w-4 h-4 rounded-full border border-[var(--border)]"
+              className="w-4 h-4 rounded-full border border-border"
               style={{ backgroundColor: color.hex }}
               title={color.name}
             />
           ))}
           {product.colors.length > 4 && (
-            <span className="text-xs text-[var(--muted)] ml-1">
+            <span className="text-xs text-muted ml-1">
               +{product.colors.length - 4}
             </span>
           )}

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -42,13 +42,19 @@ const statusLabels: Record<string, string> = {
 };
 
 const statusColors: Record<string, string> = {
-  pending_payment: "bg-amber-500/20 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 border border-amber-500/30",
+  pending_payment:
+    "bg-amber-500/20 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 border border-amber-500/30",
   paid: "bg-emerald-500/20 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-400 border border-emerald-500/30",
-  preparing: "bg-blue-500/20 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 border border-blue-500/30",
-  shipped: "bg-violet-500/20 text-violet-700 dark:bg-violet-500/20 dark:text-violet-400 border border-violet-500/30",
-  delivered: "bg-teal-500/20 text-teal-700 dark:bg-teal-500/20 dark:text-teal-400 border border-teal-500/30",
-  cancelled: "bg-red-500/20 text-red-700 dark:bg-red-500/20 dark:text-red-400 border border-red-500/30",
-  refunded: "bg-slate-500/20 text-slate-700 dark:bg-slate-500/20 dark:text-slate-400 border border-slate-500/30",
+  preparing:
+    "bg-blue-500/20 text-blue-700 dark:bg-blue-500/20 dark:text-blue-400 border border-blue-500/30",
+  shipped:
+    "bg-violet-500/20 text-violet-700 dark:bg-violet-500/20 dark:text-violet-400 border border-violet-500/30",
+  delivered:
+    "bg-teal-500/20 text-teal-700 dark:bg-teal-500/20 dark:text-teal-400 border border-teal-500/30",
+  cancelled:
+    "bg-red-500/20 text-red-700 dark:bg-red-500/20 dark:text-red-400 border border-red-500/30",
+  refunded:
+    "bg-slate-500/20 text-slate-700 dark:bg-slate-500/20 dark:text-slate-400 border border-slate-500/30",
 };
 
 export default function MyAccountPage() {
@@ -64,17 +70,13 @@ export default function MyAccountPage() {
     }
   }, [user, loading, router]);
 
-  useEffect(() => {
-    if (user?.email) {
-      fetchOrders();
-    }
-  }, [user]);
-
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     if (!user?.email) return;
 
     try {
-      const response = await fetch(`/api/orders?email=${encodeURIComponent(user.email)}`);
+      const response = await fetch(
+        `/api/orders?email=${encodeURIComponent(user.email)}`,
+      );
       const data = await response.json();
       setOrders(Array.isArray(data) ? data : []);
     } catch (error) {
@@ -83,7 +85,13 @@ export default function MyAccountPage() {
     } finally {
       setIsLoadingOrders(false);
     }
-  };
+  }, [user?.email]);
+
+  useEffect(() => {
+    if (user?.email) {
+      fetchOrders();
+    }
+  }, [user?.email, fetchOrders]);
 
   const handleLogout = async () => {
     await logout();
@@ -104,8 +112,8 @@ export default function MyAccountPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--background)]">
-        <div className="animate-spin w-8 h-8 border-2 border-[var(--foreground)] border-t-transparent rounded-full" />
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin w-8 h-8 border-2 border-foreground border-t-transparent rounded-full" />
       </div>
     );
   }
@@ -115,15 +123,17 @@ export default function MyAccountPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--background)]">
+    <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-[var(--background)]/80 backdrop-blur-md border-b border-[var(--border)]">
+      <header className="sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-border">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <Link href="/" className="flex items-center gap-2">
               <div className="flex flex-col items-center">
-                <span className="font-display text-xl tracking-wide">D&apos; flor</span>
-                <span className="font-body text-[8px] tracking-[0.3em] uppercase text-[var(--muted)] -mt-1">
+                <span className="font-display text-xl tracking-wide">
+                  D&apos; flor
+                </span>
+                <span className="font-body text-[8px] tracking-[0.3em] uppercase text-muted -mt-1">
                   elegance
                 </span>
               </div>
@@ -131,13 +141,13 @@ export default function MyAccountPage() {
             <div className="flex items-center gap-4">
               <Link
                 href="/loja"
-                className="text-sm text-[var(--muted)] hover:text-[var(--foreground)] transition-colors"
+                className="text-sm text-muted hover:text-foreground transition-colors"
               >
                 Continuar Comprando
               </Link>
               <button
                 onClick={handleLogout}
-                className="px-4 py-2 text-sm bg-[var(--secondary)] hover:bg-[var(--border)] rounded-lg transition-colors"
+                className="px-4 py-2 text-sm bg-secondary hover:bg-border rounded-lg transition-colors"
               >
                 Sair
               </button>
@@ -148,16 +158,17 @@ export default function MyAccountPage() {
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* User Info */}
-        <div className="bg-[var(--card-bg)] border border-[var(--border)] rounded-2xl p-6 mb-8">
+        <div className="bg-card-bg border border-border rounded-2xl p-6 mb-8">
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-[var(--secondary)] rounded-full flex items-center justify-center text-2xl font-bold">
-              {user.displayName?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase()}
+            <div className="w-16 h-16 bg-secondary rounded-full flex items-center justify-center text-2xl font-bold">
+              {user.displayName?.charAt(0).toUpperCase() ||
+                user.email?.charAt(0).toUpperCase()}
             </div>
             <div>
               <h1 className="text-xl font-bold">
                 Olá, {user.displayName || "Cliente"}!
               </h1>
-              <p className="text-[var(--muted)] text-sm">{user.email}</p>
+              <p className="text-muted text-sm">{user.email}</p>
             </div>
           </div>
         </div>
@@ -169,13 +180,13 @@ export default function MyAccountPage() {
             <h2 className="text-xl font-bold mb-4">Meus Pedidos</h2>
 
             {isLoadingOrders ? (
-              <div className="text-center py-8 text-[var(--muted)]">
+              <div className="text-center py-8 text-muted">
                 Carregando pedidos...
               </div>
             ) : orders.length === 0 ? (
-              <div className="bg-[var(--card-bg)] border border-[var(--border)] rounded-2xl p-8 text-center">
+              <div className="bg-card-bg border border-border rounded-2xl p-8 text-center">
                 <svg
-                  className="w-16 h-16 mx-auto text-[var(--muted)] mb-4"
+                  className="w-16 h-16 mx-auto text-muted mb-4"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -187,12 +198,12 @@ export default function MyAccountPage() {
                     d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
                   />
                 </svg>
-                <p className="text-[var(--muted)] mb-4">
+                <p className="text-muted mb-4">
                   Você ainda não fez nenhum pedido
                 </p>
                 <Link
                   href="/loja"
-                  className="inline-block px-6 py-3 bg-[var(--foreground)] text-[var(--background)] rounded-xl font-semibold hover:opacity-90 transition-opacity"
+                  className="inline-block px-6 py-3 bg-foreground text-background rounded-xl font-semibold hover:opacity-90 transition-opacity"
                 >
                   Explorar Loja
                 </Link>
@@ -205,12 +216,14 @@ export default function MyAccountPage() {
                     onClick={() => setSelectedOrder(order)}
                     className={`w-full p-5 rounded-xl border transition-all text-left ${
                       selectedOrder?.id === order.id
-                        ? "bg-[var(--foreground)] text-[var(--background)] border-[var(--foreground)]"
-                        : "bg-[var(--card-bg)] border-[var(--border)] hover:border-[var(--foreground)]"
+                        ? "bg-foreground text-background border-foreground"
+                        : "bg-card-bg border-border hover:border-foreground"
                     }`}
                   >
                     <div className="flex items-center justify-between gap-2 mb-2">
-                      <span className="font-bold text-sm truncate">#{order.order_number}</span>
+                      <span className="font-bold text-sm truncate">
+                        #{order.order_number}
+                      </span>
                       <span className="font-bold text-lg whitespace-nowrap">
                         {formatCurrency(order.total)}
                       </span>
@@ -220,7 +233,7 @@ export default function MyAccountPage() {
                         className={`text-sm ${
                           selectedOrder?.id === order.id
                             ? "opacity-80"
-                            : "text-[var(--muted)]"
+                            : "text-muted"
                         }`}
                       >
                         {formatDate(order.created_at)}
@@ -244,13 +257,13 @@ export default function MyAccountPage() {
           {/* Order Details */}
           <div className="lg:col-span-2">
             {selectedOrder ? (
-              <div className="bg-[var(--card-bg)] border border-[var(--border)] rounded-2xl p-6">
+              <div className="bg-card-bg border border-border rounded-2xl p-6">
                 <div className="flex items-center justify-between mb-6">
                   <div>
                     <h2 className="text-xl font-bold">
                       Pedido #{selectedOrder.order_number}
                     </h2>
-                    <p className="text-sm text-[var(--muted)]">
+                    <p className="text-sm text-muted">
                       Realizado em {formatDate(selectedOrder.created_at)}
                     </p>
                   </div>
@@ -264,7 +277,7 @@ export default function MyAccountPage() {
                 </div>
 
                 {/* Order Timeline */}
-                <div className="mb-6 p-4 bg-[var(--secondary)] rounded-xl">
+                <div className="mb-6 p-4 bg-secondary rounded-xl">
                   <h3 className="font-medium mb-3">Status do Pedido</h3>
                   <div className="space-y-3">
                     <div className="flex items-center gap-3">
@@ -276,13 +289,16 @@ export default function MyAccountPage() {
                         }`}
                       />
                       <span className="text-sm">
-                        Pedido realizado - {formatDate(selectedOrder.created_at)}
+                        Pedido realizado -{" "}
+                        {formatDate(selectedOrder.created_at)}
                       </span>
                     </div>
                     <div className="flex items-center gap-3">
                       <div
                         className={`w-3 h-3 rounded-full ${
-                          selectedOrder.paid_at ? "bg-emerald-500" : "bg-gray-300 dark:bg-gray-600"
+                          selectedOrder.paid_at
+                            ? "bg-emerald-500"
+                            : "bg-gray-300 dark:bg-gray-600"
                         }`}
                       />
                       <span className="text-sm">
@@ -347,9 +363,9 @@ export default function MyAccountPage() {
                     {selectedOrder.order_items?.map((item) => (
                       <div
                         key={item.id}
-                        className="flex items-center gap-4 p-3 bg-[var(--secondary)] rounded-lg"
+                        className="flex items-center gap-4 p-3 bg-secondary rounded-lg"
                       >
-                        <div className="w-16 h-16 rounded-lg overflow-hidden bg-[var(--border)]">
+                        <div className="w-16 h-16 rounded-lg overflow-hidden bg-border">
                           {item.product_image && (
                             <img
                               src={item.product_image}
@@ -360,7 +376,7 @@ export default function MyAccountPage() {
                         </div>
                         <div className="flex-1">
                           <p className="font-medium">{item.product_name}</p>
-                          <div className="text-sm text-[var(--muted)]">
+                          <div className="text-sm text-muted">
                             {item.selected_size && (
                               <span>Tam: {item.selected_size}</span>
                             )}
@@ -386,13 +402,13 @@ export default function MyAccountPage() {
                 </div>
 
                 {/* Order Total */}
-                <div className="border-t border-[var(--border)] pt-4">
+                <div className="border-t border-border pt-4">
                   <div className="flex justify-between items-center text-lg font-bold">
                     <span>Total</span>
                     <span>{formatCurrency(selectedOrder.total)}</span>
                   </div>
                   {selectedOrder.shipping_method && (
-                    <p className="text-sm text-[var(--muted)] mt-1">
+                    <p className="text-sm text-muted mt-1">
                       Entrega via {selectedOrder.shipping_method} (
                       {selectedOrder.shipping_deadline})
                     </p>
@@ -400,9 +416,9 @@ export default function MyAccountPage() {
                 </div>
               </div>
             ) : (
-              <div className="bg-[var(--card-bg)] border border-[var(--border)] rounded-2xl p-12 text-center">
+              <div className="bg-card-bg border border-border rounded-2xl p-12 text-center">
                 <svg
-                  className="w-16 h-16 mx-auto text-[var(--muted)] mb-4"
+                  className="w-16 h-16 mx-auto text-muted mb-4"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -414,7 +430,7 @@ export default function MyAccountPage() {
                     d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
                   />
                 </svg>
-                <p className="text-[var(--muted)]">
+                <p className="text-muted">
                   Selecione um pedido para ver os detalhes
                 </p>
               </div>

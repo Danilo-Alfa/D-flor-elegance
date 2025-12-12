@@ -2,24 +2,24 @@
 
 :root {
   /* Paleta D'Flor Elegance - CORES CLARAS do Lovable */
-  --background: #F9F6F1;                     /* Creme muito claro/quase branco */
-  --foreground: #5D4E3D;                     /* Marrom escuro para texto */
-  --primary: #C4A68A;                        /* Rosa/bege rosado - igual imagem */
-  --primary-hover: #B89878;                  /* Rosa mais escuro */
-  --primary-foreground: #FFFFFF;             /* Texto branco sobre primary */
-  --secondary: #F5F0EA;                      /* Creme claro para seções */
-  --secondary-foreground: #5D4E3D;           /* Texto escuro */
-  --accent: #8B9A7D;                         /* Verde oliva/sage */
-  --accent-foreground: #FFFFFF;              /* Texto claro sobre accent */
-  --card-bg: #FAF7F3;                        /* Card muito claro */
-  --card-foreground: #5D4E3D;                /* Texto do card */
-  --border: #E8E0D5;                         /* Borda bege clara */
-  --input: #E8E0D5;                          /* Input border */
-  --ring: #C4A68A;                           /* Focus ring */
-  --muted: #A69485;                          /* Marrom claro */
-  --muted-foreground: #8B7D6B;               /* Texto secundario */
-  --success: #8B9A7D;                        /* Verde oliva */
-  --error: #C97A7A;                          /* Vermelho suave */
+  --background: #f9f6f1; /* Creme muito claro/quase branco */
+  --foreground: #5d4e3d; /* Marrom escuro para texto */
+  --primary: #c4a68a; /* Rosa/bege rosado - igual imagem */
+  --primary-hover: #b89878; /* Rosa mais escuro */
+  --primary-foreground: #ffffff; /* Texto branco sobre primary */
+  --secondary: #f5f0ea; /* Creme claro para seções */
+  --secondary-foreground: #5d4e3d; /* Texto escuro */
+  --accent: #8b9a7d; /* Verde oliva/sage */
+  --accent-foreground: #ffffff; /* Texto claro sobre accent */
+  --card-bg: #faf7f3; /* Card muito claro */
+  --card-foreground: #5d4e3d; /* Texto do card */
+  --border: #e8e0d5; /* Borda bege clara */
+  --input: #e8e0d5; /* Input border */
+  --ring: #c4a68a; /* Focus ring */
+  --muted: #a69485; /* Marrom claro */
+  --muted-foreground: #8b7d6b; /* Texto secundario */
+  --success: #8b9a7d; /* Verde oliva */
+  --error: #c97a7a; /* Vermelho suave */
 }
 
 @theme inline {
@@ -48,22 +48,22 @@
 @media (prefers-color-scheme: dark) {
   :root {
     /* Tema escuro - manter claro para D'Flor */
-    --background: #F9F6F1;
-    --foreground: #5D4E3D;
-    --primary: #C4A68A;
-    --primary-hover: #B89878;
-    --primary-foreground: #FFFFFF;
-    --secondary: #F5F0EA;
-    --secondary-foreground: #5D4E3D;
-    --accent: #8B9A7D;
-    --accent-foreground: #FFFFFF;
-    --card-bg: #FAF7F3;
-    --card-foreground: #5D4E3D;
-    --border: #E8E0D5;
-    --input: #E8E0D5;
-    --ring: #C4A68A;
-    --muted: #A69485;
-    --muted-foreground: #8B7D6B;
+    --background: #f9f6f1;
+    --foreground: #5d4e3d;
+    --primary: #c4a68a;
+    --primary-hover: #b89878;
+    --primary-foreground: #ffffff;
+    --secondary: #f5f0ea;
+    --secondary-foreground: #5d4e3d;
+    --accent: #8b9a7d;
+    --accent-foreground: #ffffff;
+    --card-bg: #faf7f3;
+    --card-foreground: #5d4e3d;
+    --border: #e8e0d5;
+    --input: #e8e0d5;
+    --ring: #c4a68a;
+    --muted: #a69485;
+    --muted-foreground: #8b7d6b;
   }
 }
 
@@ -77,7 +77,7 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-family: "Segoe UI", system-ui, sans-serif;
 }
 
 /* Shadow utilities */
@@ -175,7 +175,8 @@ body {
 }
 
 @keyframes float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
@@ -201,12 +202,12 @@ body {
 
 /* Font Display */
 .font-display {
-  font-family: var(--font-playfair), 'Playfair Display', Georgia, serif;
+  font-family: var(--font-playfair), "Playfair Display", Georgia, serif;
   font-weight: 400;
 }
 
 .font-body {
-  font-family: var(--font-geist-sans), 'Segoe UI', system-ui, sans-serif;
+  font-family: var(--font-geist-sans), "Segoe UI", system-ui, sans-serif;
 }
 
 /* Scrollbar styles */
@@ -235,7 +236,8 @@ body {
 }
 
 .card-3d:hover {
-  transform: perspective(1000px) rotateX(var(--rotate-x, 0deg)) rotateY(var(--rotate-y, 0deg)) scale3d(1.02, 1.02, 1.02);
+  transform: perspective(1000px) rotateX(var(--rotate-x, 0deg))
+    rotateY(var(--rotate-y, 0deg)) scale3d(1.02, 1.02, 1.02);
 }
 
 .card-3d-inner {

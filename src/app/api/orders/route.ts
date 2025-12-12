@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
       console.error("Erro ao buscar pedidos:", error);
       return NextResponse.json(
         { error: "Erro ao buscar pedidos" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
     console.error("Erro ao buscar pedidos:", error);
     return NextResponse.json(
       { error: "Erro interno do servidor" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -55,20 +55,12 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const {
-      customer,
-      items,
-      shipping,
-      totals,
-      mercadopago_preference_id,
-    } = body;
+    const { customer, items, shipping, totals, mercadopago_preference_id } =
+      body;
 
     // Validações básicas
     if (!customer || !items || !items.length || !shipping || !totals) {
-      return NextResponse.json(
-        { error: "Dados incompletos" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Dados incompletos" }, { status: 400 });
     }
 
     const orderNumber = generateOrderNumber();
@@ -107,30 +99,32 @@ export async function POST(request: NextRequest) {
       console.error("Erro ao criar pedido:", orderError);
       return NextResponse.json(
         { error: "Erro ao criar pedido" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
     // Criar itens do pedido
-    const orderItems = items.map((item: {
-      id: string;
-      name: string;
-      image?: string;
-      quantity: number;
-      price: number;
-      selectedSize?: string;
-      selectedColor?: string;
-    }) => ({
-      order_id: order.id,
-      product_id: item.id,
-      product_name: item.name,
-      product_image: item.image,
-      quantity: item.quantity,
-      unit_price: item.price,
-      total_price: item.price * item.quantity,
-      selected_size: item.selectedSize,
-      selected_color: item.selectedColor,
-    }));
+    const orderItems = items.map(
+      (item: {
+        id: string;
+        name: string;
+        image?: string;
+        quantity: number;
+        price: number;
+        selectedSize?: string;
+        selectedColor?: string;
+      }) => ({
+        order_id: order.id,
+        product_id: item.id,
+        product_name: item.name,
+        product_image: item.image,
+        quantity: item.quantity,
+        unit_price: item.price,
+        total_price: item.price * item.quantity,
+        selected_size: item.selectedSize,
+        selected_color: item.selectedColor,
+      }),
+    );
 
     const { error: itemsError } = await supabase
       .from("order_items")
@@ -142,7 +136,7 @@ export async function POST(request: NextRequest) {
       await supabase.from("orders").delete().eq("id", order.id);
       return NextResponse.json(
         { error: "Erro ao criar itens do pedido" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -157,7 +151,7 @@ export async function POST(request: NextRequest) {
     console.error("Erro ao criar pedido:", error);
     return NextResponse.json(
       { error: "Erro interno do servidor" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

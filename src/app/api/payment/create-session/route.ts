@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     if (!process.env.STRIPE_SECRET_KEY) {
       return NextResponse.json(
         { error: "Stripe nao configurado" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
     const subtotal = items.reduce(
       (sum: number, item: { unit_price: number; quantity: number }) =>
         sum + item.unit_price * item.quantity,
-      0
+      0,
     );
     const shippingCost = shipping?.cost || 0;
     const total = subtotal + shippingCost;
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
       console.error("Erro ao criar pedido:", orderError);
       return NextResponse.json(
         { error: "Erro ao criar pedido" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -96,7 +96,7 @@ export async function POST(request: NextRequest) {
           total_price: item.price * item.quantity,
           selected_size: item.selectedSize || null,
           selected_color: item.selectedColor || null,
-        })
+        }),
       );
 
       const { error: itemsError } = await supabase
@@ -108,28 +108,38 @@ export async function POST(request: NextRequest) {
         await supabase.from("orders").delete().eq("id", order.id);
         return NextResponse.json(
           { error: "Erro ao criar itens do pedido" },
-          { status: 500 }
+          { status: 500 },
         );
       }
     }
 
     // Preparar line_items para o Stripe Checkout
-    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = cartItems.map(
-      (item: { name: string; quantity: number; price: number; selectedSize?: string; selectedColor?: string }) => ({
-        price_data: {
-          currency: "brl",
-          product_data: {
-            name: item.name,
-            description: [
-              item.selectedSize ? `Tamanho: ${item.selectedSize}` : null,
-              item.selectedColor ? `Cor: ${item.selectedColor}` : null,
-            ].filter(Boolean).join(" | ") || undefined,
+    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] =
+      cartItems.map(
+        (item: {
+          name: string;
+          quantity: number;
+          price: number;
+          selectedSize?: string;
+          selectedColor?: string;
+        }) => ({
+          price_data: {
+            currency: "brl",
+            product_data: {
+              name: item.name,
+              description:
+                [
+                  item.selectedSize ? `Tamanho: ${item.selectedSize}` : null,
+                  item.selectedColor ? `Cor: ${item.selectedColor}` : null,
+                ]
+                  .filter(Boolean)
+                  .join(" | ") || undefined,
+            },
+            unit_amount: Math.round(item.price * 100),
           },
-          unit_amount: Math.round(item.price * 100),
-        },
-        quantity: item.quantity,
-      })
-    );
+          quantity: item.quantity,
+        }),
+      );
 
     // Adicionar frete como item se existir
     if (shippingCost > 0) {
@@ -146,7 +156,10 @@ export async function POST(request: NextRequest) {
     }
 
     // URL base do site
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || process.env.NEXT_PUBLIC_URL || "http://localhost:3000";
+    const baseUrl =
+      process.env.NEXT_PUBLIC_BASE_URL ||
+      process.env.NEXT_PUBLIC_URL ||
+      "http://localhost:3000";
 
     // Criar Checkout Session com modo embedded
     // NOTA: PIX esta desabilitado temporariamente ate ser ativado no Stripe Dashboard
@@ -179,7 +192,7 @@ export async function POST(request: NextRequest) {
     console.error("Erro ao criar sessao de checkout:", error);
     return NextResponse.json(
       { error: "Erro ao processar checkout" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -193,7 +206,7 @@ export async function GET(request: NextRequest) {
     if (!sessionId) {
       return NextResponse.json(
         { error: "session_id nao fornecido" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -208,7 +221,7 @@ export async function GET(request: NextRequest) {
     console.error("Erro ao verificar sessao:", error);
     return NextResponse.json(
       { error: "Erro ao verificar status" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

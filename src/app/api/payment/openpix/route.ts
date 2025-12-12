@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
       console.error("OPENPIX_APP_ID nao configurado");
       return NextResponse.json(
         { error: "OpenPix nao configurado" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     const subtotal = items.reduce(
       (sum: number, item: { unit_price: number; quantity: number }) =>
         sum + item.unit_price * item.quantity,
-      0
+      0,
     );
     const shippingCost = shipping?.cost || 0;
     const total = subtotal + shippingCost;
@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
       console.error("Erro ao criar pedido:", orderError);
       return NextResponse.json(
         { error: "Erro ao criar pedido" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
           total_price: item.price * item.quantity,
           selected_size: item.selectedSize || null,
           selected_color: item.selectedColor || null,
-        })
+        }),
       );
 
       const { error: itemsError } = await supabase
@@ -127,15 +127,16 @@ export async function POST(request: NextRequest) {
         await supabase.from("orders").delete().eq("id", order.id);
         return NextResponse.json(
           { error: "Erro ao criar itens do pedido" },
-          { status: 500 }
+          { status: 500 },
         );
       }
     }
 
     // Preparar descricao dos itens
     const itemsDescription = cartItems
-      .map((item: { name: string; quantity: number }) =>
-        `${item.quantity}x ${item.name}`
+      .map(
+        (item: { name: string; quantity: number }) =>
+          `${item.quantity}x ${item.name}`,
       )
       .join(", ");
 
@@ -180,17 +181,23 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    console.log("Criando cobranca OpenPix:", JSON.stringify(chargeBody, null, 2));
+    console.log(
+      "Criando cobranca OpenPix:",
+      JSON.stringify(chargeBody, null, 2),
+    );
 
     // Criar cobranca no OpenPix
-    const openpixResponse = await fetch("https://api.openpix.com.br/api/v1/charge", {
-      method: "POST",
-      headers: {
-        "Authorization": appId,
-        "Content-Type": "application/json",
+    const openpixResponse = await fetch(
+      "https://api.openpix.com.br/api/v1/charge",
+      {
+        method: "POST",
+        headers: {
+          Authorization: appId,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(chargeBody),
       },
-      body: JSON.stringify(chargeBody),
-    });
+    );
 
     if (!openpixResponse.ok) {
       const errorText = await openpixResponse.text();
@@ -201,7 +208,7 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json(
         { error: "Erro ao gerar PIX. Verifique as credenciais do OpenPix." },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -212,7 +219,7 @@ export async function POST(request: NextRequest) {
       await supabase.from("orders").delete().eq("id", order.id);
       return NextResponse.json(
         { error: "Erro ao gerar QR Code PIX" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -248,7 +255,7 @@ export async function POST(request: NextRequest) {
     console.error("Erro ao criar cobranca OpenPix:", error);
     return NextResponse.json(
       { error: "Erro ao processar pagamento" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -262,7 +269,7 @@ export async function GET(request: NextRequest) {
     if (!orderNumber) {
       return NextResponse.json(
         { error: "order_number obrigatorio" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -276,7 +283,7 @@ export async function GET(request: NextRequest) {
     if (error || !order) {
       return NextResponse.json(
         { error: "Pedido nao encontrado" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -294,9 +301,9 @@ export async function GET(request: NextRequest) {
             `https://api.openpix.com.br/api/v1/charge/${order.payment_id}`,
             {
               headers: {
-                "Authorization": appId,
+                Authorization: appId,
               },
-            }
+            },
           );
 
           if (response.ok) {
@@ -326,7 +333,7 @@ export async function GET(request: NextRequest) {
     console.error("Erro ao verificar status:", error);
     return NextResponse.json(
       { error: "Erro ao verificar status" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

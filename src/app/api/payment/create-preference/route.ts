@@ -15,12 +15,13 @@ function generateOrderNumber(): string {
 
 export async function POST(request: NextRequest) {
   try {
-    const { items, payer, shipping, cartItems, paymentMethod } = await request.json();
+    const { items, payer, shipping, cartItems, paymentMethod } =
+      await request.json();
 
     if (!process.env.STRIPE_SECRET_KEY) {
       return NextResponse.json(
         { error: "Stripe nao configurado" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -28,7 +29,7 @@ export async function POST(request: NextRequest) {
     const subtotal = items.reduce(
       (sum: number, item: { unit_price: number; quantity: number }) =>
         sum + item.unit_price * item.quantity,
-      0
+      0,
     );
     const shippingCost = shipping?.cost || 0;
     const total = subtotal + shippingCost;
@@ -74,7 +75,7 @@ export async function POST(request: NextRequest) {
       console.error("Erro ao criar pedido:", orderError);
       return NextResponse.json(
         { error: "Erro ao criar pedido" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -99,7 +100,7 @@ export async function POST(request: NextRequest) {
           total_price: item.price * item.quantity,
           selected_size: item.selectedSize || null,
           selected_color: item.selectedColor || null,
-        })
+        }),
       );
 
       const { error: itemsError } = await supabase
@@ -111,14 +112,17 @@ export async function POST(request: NextRequest) {
         await supabase.from("orders").delete().eq("id", order.id);
         return NextResponse.json(
           { error: "Erro ao criar itens do pedido" },
-          { status: 500 }
+          { status: 500 },
         );
       }
     }
 
     // Descricao dos itens para o Stripe
     const description = cartItems
-      .map((item: { name: string; quantity: number }) => `${item.quantity}x ${item.name}`)
+      .map(
+        (item: { name: string; quantity: number }) =>
+          `${item.quantity}x ${item.name}`,
+      )
       .join(", ");
 
     // Criar PaymentIntent baseado no metodo de pagamento
@@ -152,11 +156,13 @@ export async function POST(request: NextRequest) {
         type: "pix",
         clientSecret: paymentIntent.client_secret,
         orderNumber: orderNumber,
-        pixData: pixData ? {
-          qrCode: pixData.data,
-          qrCodeBase64: pixData.image_url_png,
-          expiresAt: pixData.expires_at,
-        } : null,
+        pixData: pixData
+          ? {
+              qrCode: pixData.data,
+              qrCodeBase64: pixData.image_url_png,
+              expiresAt: pixData.expires_at,
+            }
+          : null,
       });
     } else {
       // Criar PaymentIntent para cartao
@@ -187,7 +193,7 @@ export async function POST(request: NextRequest) {
     console.error("Erro ao criar PaymentIntent:", error);
     return NextResponse.json(
       { error: "Erro ao processar pagamento" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

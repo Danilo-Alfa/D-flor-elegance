@@ -22,8 +22,10 @@ const playfair = Playfair_Display({
 
 export const metadata: Metadata = {
   title: "D' flor elegance | Moda Feminina Sofisticada",
-  description: "D' flor elegance - Loja de moda feminina com peças exclusivas que celebram a feminilidade com elegância e sofisticação. Descubra nossa coleção.",
-  keywords: "moda feminina, roupas elegantes, loja de roupas, moda sofisticada, vestidos, blusas, D' flor elegance",
+  description:
+    "D' flor elegance - Loja de moda feminina com peças exclusivas que celebram a feminilidade com elegância e sofisticação. Descubra nossa coleção.",
+  keywords:
+    "moda feminina, roupas elegantes, loja de roupas, moda sofisticada, vestidos, blusas, D' flor elegance",
   icons: {
     icon: "/logo.jpg",
     apple: "/logo.jpg",
@@ -41,9 +43,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} antialiased`}
       >
         <AuthProvider>
-          <StoreProvider>
-            {children}
-          </StoreProvider>
+          <StoreProvider>{children}</StoreProvider>
         </AuthProvider>
       </body>
     </html>

@@ -118,6 +118,7 @@ export function ImageUpload({ onUploadComplete }: ImageUploadProps) {
 No arquivo `src/app/admin/page.tsx`, substituir o input de URL pelo componente de upload:
 
 **Antes (atual):**
+
 ```tsx
 <input
   type="text"
@@ -130,6 +131,7 @@ No arquivo `src/app/admin/page.tsx`, substituir o input de URL pelo componente d
 ```
 
 **Depois (com Uploadthing):**
+
 ```tsx
 import { ImageUpload } from "@/components/ImageUpload";
 
@@ -141,7 +143,7 @@ import { ImageUpload } from "@/components/ImageUpload";
       images: [...editForm.images, url],
     });
   }}
-/>
+/>;
 ```
 
 ### 8. (Opcional) Estilizar com Tailwind
@@ -202,7 +204,7 @@ import { UploadDropzone } from "@uploadthing/react";
   onClientUploadComplete={(res) => {
     // ...
   }}
-/>
+/>;
 ```
 
 ---
@@ -217,10 +219,10 @@ import { UploadDropzone } from "@uploadthing/react";
 
 ## Custos (se ultrapassar free tier)
 
-| Plano | Storage | Preço |
-|-------|---------|-------|
-| Free | 2 GB | Grátis |
-| Pro | 100 GB | $10/mês |
+| Plano      | Storage   | Preço        |
+| ---------- | --------- | ------------ |
+| Free       | 2 GB      | Grátis       |
+| Pro        | 100 GB    | $10/mês      |
 | Enterprise | Ilimitado | Sob consulta |
 
 Para a maioria dos e-commerces pequenos/médios, o plano gratuito é suficiente.

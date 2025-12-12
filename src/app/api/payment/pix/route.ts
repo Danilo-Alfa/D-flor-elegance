@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
     if (!process.env.MERCADOPAGO_ACCESS_TOKEN) {
       return NextResponse.json(
         { error: "Mercado Pago nao configurado" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
     const subtotal = items.reduce(
       (sum: number, item: { unit_price: number; quantity: number }) =>
         sum + item.unit_price * item.quantity,
-      0
+      0,
     );
     const shippingCost = shipping?.cost || 0;
     const total = subtotal + shippingCost;
@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
       console.error("Erro ao criar pedido:", orderError);
       return NextResponse.json(
         { error: "Erro ao criar pedido" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -136,7 +136,7 @@ export async function POST(request: NextRequest) {
           total_price: item.price * item.quantity,
           selected_size: item.selectedSize || null,
           selected_color: item.selectedColor || null,
-        })
+        }),
       );
 
       const { error: itemsError } = await supabase
@@ -148,14 +148,17 @@ export async function POST(request: NextRequest) {
         await supabase.from("orders").delete().eq("id", order.id);
         return NextResponse.json(
           { error: "Erro ao criar itens do pedido" },
-          { status: 500 }
+          { status: 500 },
         );
       }
     }
 
     // Descricao dos itens
     const description = cartItems
-      .map((item: { name: string; quantity: number }) => `${item.quantity}x ${item.name}`)
+      .map(
+        (item: { name: string; quantity: number }) =>
+          `${item.quantity}x ${item.name}`,
+      )
       .join(", ")
       .substring(0, 200);
 
@@ -192,8 +195,14 @@ export async function POST(request: NextRequest) {
     };
 
     // Log para debug
-    console.log("Criando pagamento PIX com:", JSON.stringify(paymentBody, null, 2));
-    console.log("Access Token (primeiros 20 chars):", process.env.MERCADOPAGO_ACCESS_TOKEN?.substring(0, 20) + "...");
+    console.log(
+      "Criando pagamento PIX com:",
+      JSON.stringify(paymentBody, null, 2),
+    );
+    console.log(
+      "Access Token (primeiros 20 chars):",
+      process.env.MERCADOPAGO_ACCESS_TOKEN?.substring(0, 20) + "...",
+    );
 
     // Criar pagamento PIX no Mercado Pago
     let mpPayment;
@@ -211,18 +220,19 @@ export async function POST(request: NextRequest) {
       await supabase.from("orders").delete().eq("id", order.id);
 
       // Extrair mensagem de erro
-      const errorMessage = mpError instanceof Error
-        ? mpError.message
-        : typeof mpError === 'object' && mpError !== null
-          ? JSON.stringify(mpError)
-          : "Erro desconhecido";
+      const errorMessage =
+        mpError instanceof Error
+          ? mpError.message
+          : typeof mpError === "object" && mpError !== null
+            ? JSON.stringify(mpError)
+            : "Erro desconhecido";
 
       return NextResponse.json(
         {
           error: "Erro ao gerar PIX. Verifique as credenciais do Mercado Pago.",
-          details: errorMessage
+          details: errorMessage,
         },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -231,7 +241,7 @@ export async function POST(request: NextRequest) {
       await supabase.from("orders").delete().eq("id", order.id);
       return NextResponse.json(
         { error: "Erro ao gerar PIX - resposta invalida" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -245,7 +255,7 @@ export async function POST(request: NextRequest) {
       await supabase.from("orders").delete().eq("id", order.id);
       return NextResponse.json(
         { error: "Erro ao gerar QR Code PIX" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -273,7 +283,7 @@ export async function POST(request: NextRequest) {
     console.error("Erro ao criar pagamento PIX:", error);
     return NextResponse.json(
       { error: "Erro ao processar pagamento PIX" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -287,7 +297,7 @@ export async function GET(request: NextRequest) {
     if (!orderNumber) {
       return NextResponse.json(
         { error: "order_number nao fornecido" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -301,7 +311,7 @@ export async function GET(request: NextRequest) {
     if (orderError || !order) {
       return NextResponse.json(
         { error: "Pedido nao encontrado" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -341,7 +351,10 @@ export async function GET(request: NextRequest) {
           paid_at: new Date().toISOString(),
         })
         .eq("order_number", orderNumber);
-    } else if (mpPayment.status === "cancelled" || mpPayment.status === "rejected") {
+    } else if (
+      mpPayment.status === "cancelled" ||
+      mpPayment.status === "rejected"
+    ) {
       status = "failed";
     }
 
@@ -354,7 +367,7 @@ export async function GET(request: NextRequest) {
     console.error("Erro ao verificar status PIX:", error);
     return NextResponse.json(
       { error: "Erro ao verificar status" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
