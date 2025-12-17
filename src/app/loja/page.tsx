@@ -291,6 +291,7 @@ export default function LojaPage() {
               </div>
               <div className="relative">
                 <div className="aspect-square rounded-2xl overflow-hidden bg-card-bg border border-border">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src="https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?w=800"
                     alt="Nossa Loja"

@@ -125,6 +125,7 @@ function PixPayment({
 
       <div className="flex flex-col items-center space-y-4">
         <div className="bg-white p-4 rounded-xl">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={pixData.qrCodeImage}
             alt="QR Code PIX"

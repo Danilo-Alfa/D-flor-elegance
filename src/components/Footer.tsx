@@ -243,6 +243,7 @@ export function Footer() {
               <span className="font-body text-xs text-muted-foreground uppercase tracking-wider">
                 Pagamento Seguro
               </span>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="https://logospng.org/download/mercado-pago/logo-mercado-pago-icone-1024.png"
                 alt="Mercado Pago"

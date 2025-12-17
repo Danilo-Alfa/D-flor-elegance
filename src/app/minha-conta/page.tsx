@@ -367,6 +367,7 @@ export default function MyAccountPage() {
                       >
                         <div className="w-16 h-16 rounded-lg overflow-hidden bg-border">
                           {item.product_image && (
+                            /* eslint-disable-next-line @next/next/no-img-element */
                             <img
                               src={item.product_image}
                               alt={item.product_name}

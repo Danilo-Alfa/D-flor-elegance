@@ -60,6 +60,7 @@ export function ImageFrame({
         {!loaded && (
           <div className="absolute inset-0 bg-secondary animate-pulse" />
         )}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={src}
           alt={alt}
